@@ -1,38 +1,369 @@
-{% set active_page = "Home" %}
+{% set active_page = "Index" %}
+{% set page_title = "Index" %}
+
 {% extends "base.html" %}
+{% block head %}
+{{ super() }}
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.4.0/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tippy.js@6/dist/tippy-bundle.umd.min.js"></script>
 
-{% block top %}
-<style>
-  .back {
-    background: url("{{config.background_image}}") no-repeat center;
-    background-size: cover;
-  }
-  .back h2 {
-    font-family: "Lato", sans-serif;
-    font-weight: 900;
-  }
-</style>
+<script src="static/js/modules/icons.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
 
-<div class="jumbotron jumbotron-fluid back" style="padding-bottom: 20px;">
-  <div class="row header p-6 m-5">
-    <div class="p-1 mx-auto text-center text-white col-md-9 col-sm-12">
-      <h2>
-        {{config.tagline|safe}}
-      </h2>
-      <h2 class="p-5">
-        {{config.date|safe}}
-      </h2>
-    </div>
-  </div>
-</div>
+{% endblock %}
+
+{% block tabs %}
+<ul class="nav nav-pills justify-content-center">
+  <li class="nav-item active">
+    <a
+      class="nav-link text-muted active"
+      data-toggle="tab"
+      href="#tab-browse"
+      role="tab"
+      aria-controls="nav-home"
+      aria-selected="true"
+      >Conversation Search
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link text-muted" href="conversation_vis.html">Similarity Search</a>
+  </li>
+</ul>
 {% endblock %}
 
 {% block content %}
+<div class="row p-3"></div>
 
-{{ readme | markdown }}
 
-<!-- Organizers -->
-{{ components.section("Organizers") }}
-{{ components.organizergroup(committee) }}
+<!-- Filters -->
+<div class="row">
+    <div class="col-12 col-sm-12 col-md-6 col-lg-4">
+        <div class="input-group mb-3">
+            <input type="text" class="form-control typeahead_all filter-input" id="search-input" placeholder="Contains" value="{{ contains }}">
+            <div class="input-group-append">
+              <button class="btn btn-outline-secondary add-filter" type="button" data-filter="contains">+</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-md-4">
+        <div class="input-group mb-3">
+            <select id="filter-toxic" class="form-control filter-input" required>
+                <option value="" {% if not filters.toxic %}selected{% endif %}>Toxic</option>
+                <option value="true" {% if filters.toxic == 'true' %}selected{% endif %}>True</option>
+                <option value="false" {% if filters.toxic == 'false' %}selected{% endif %}>False</option>
+            </select>
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary add-filter" type="button" data-filter="toxic">+</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-md-4">
+        <div class="input-group mb-3">
+            <input type="text" id="filter-hashed-ip" class="form-control filter-input" placeholder="Hashed IP" value="{{ filters.hashed_ip }}">
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary add-filter" type="button" data-filter="hashed_ip">+</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-md-4">
+        <div class="input-group mb-3">
+            <input type="text" id="filter-language" class="form-control filter-input" placeholder="Language" value="{{ filters.language }}">
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary add-filter" type="button" data-filter="language">+</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-md-4">
+        <div class="input-group mb-3">
+            <input type="text" id="filter-country" class="form-control filter-input" placeholder="Country" value="{{ filters.country }}">
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary add-filter" type="button" data-filter="country">+</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-md-4">
+        <div class="input-group mb-3">
+            <input type="text" id="filter-state" class="form-control filter-input" placeholder="State" value="{{ filters.state }}">
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary add-filter" type="button" data-filter="state">+</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-md-4">
+        <div class="input-group mb-3">
+            <input type="number" id="filter-min-turns" class="form-control filter-input" placeholder="Min Turns" value="{{ filters.min_turns }}">
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary add-filter" type="button" data-filter="min_turns">+</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-md-4">
+        <div class="input-group mb-3">
+            <select id="filter-model" class="form-control filter-input" required>
+                <option value="" {% if not filters.model %}selected{% endif %}>Model</option>
+                <option value="gpt-4-1106-preview" {% if filters.model == 'gpt-4-1106-preview' %}selected{% endif %}>gpt-4-1106-preview</option>
+                <option value="gpt-4-0314" {% if filters.model == 'gpt-4-0314' %}selected{% endif %}>gpt-4-0314</option>
+                <option value="gpt-3.5-turbo-0613" {% if filters.model == 'gpt-3.5-turbo-0613' %}selected{% endif %}>gpt-3.5-turbo-0613</option>
+                <option value="gpt-3.5-turbo-0301" {% if filters.model == 'gpt-3.5-turbo-0301' %}selected{% endif %}>gpt-3.5-turbo-0301</option>
+                <option value="gpt-3.5-turbo-0125" {% if filters.model == 'gpt-3.5-turbo-0125' %}selected{% endif %}>gpt-3.5-turbo-0125</option>
+            </select>
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary add-filter" type="button" data-filter="model">+</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-md-4">
+        <div class="input-group mb-3">
+            <select id="filter-redacted" class="form-control filter-input" required>
+                <option value="" {% if not filters.redacted %}selected{% endif %}>Contains Personal Info</option>
+                <option value="true" {% if filters.redacted == 'true' %}selected{% endif %}>True</option>
+                <option value="false" {% if filters.redacted == 'false' %}selected{% endif %}>False</option>
+            </select>
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary add-filter" type="button" data-filter="redacted">+</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div id="current-filters">
+            <h5>Filters Applied:</h5>
+            <ul class="list-inline">
+                {% if contains %}
+                <li class="list-inline-item">
+                  <span class="badge badge-primary">
+                    Contains: {{ contains }}
+                    <a href="javascript:void(0)" class="remove-filter btn btn-outline-secondary" data-filter="contains">&times;</a>
+                  </span>
+                </li>
+                {% endif %}
+                {% for key, value in filters.items() %}
+                    {% if value %}
+                    <li class="list-inline-item">
+                      <span class="badge badge-primary">
+                        {% if key == 'redacted' %}
+                          Contains personal info: {{ value }}
+                        {% else %}
+                          {{ key|capitalize }}: {{ value }}
+                        {% endif %}
+                        <a href="javascript:void(0)" class="remove-filter btn btn-outline-secondary" data-filter="{{ key }}">&times;</a>
+                      </span>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                {% if not contains and not any_filters %}
+                <li class="list-inline-item">
+                <span class="badge badge-secondary">None</span>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Cards -->
+<div class="cards row">
+{% for conversation in conversations %}
+    <div class="myCard col-xs-6 col-md-4">
+        <div class="pp-card pp-mode-detail ">
+            <div class="pp-card-header-metadata" style="">
+                <h6 class="card-subtitle text-center" style="overflow-x: auto;"><a target="_blank" href="/conversation/{{ conversation.conversation[0].turn_identifier }}">Conversation Id {{ conversation.conversation[0].turn_identifier }}</a></h6>
+                <h6 class="card-subtitle text-muted" style="margin-top: 0; overflow-x: auto;">Time: {{ conversation.timestamp }}</h6>
+		<h6 class="card-subtitle text-muted" style="margin-top: 0">
+                    <a target="_blank" href="?state={{ conversation.state }}&country={{ conversation.country }}">{{ conversation.state }}</a>,
+                    <a target="_blank" href="?country={{ conversation.country }}">{{ conversation.country }}</a>
+                </h6>
+                <h6 class="card-subtitle text-muted" style="margin-top: 0; overflow-x: auto;"><a target="_blank" href="?hashed_ip={{ conversation.hashed_ip }}">IP Hash: {{ conversation.hashed_ip }}</a></h6>
+                <h6 class="card-subtitle text-muted" style="margin-top: 0; overflow-x: auto;"><a target="_blank" href="?model={{ conversation.model }}">Model: {{ conversation.model }}</a></h6>
+                <h6 class="card-subtitle text-muted" style="margin-top: 0; overflow-x: auto;">
+                {% if conversation.toxic %}<a target="_blank" href="/?toxic=true" class="badge badge-danger">Toxic</a>{% endif %}
+                {% if conversation.redacted %}<a target="_blank" href="/?redacted=true" class="badge badge-danger">Contains personal info</a>{% endif %}
+                </h6>
+            </div>
+            <div class="pp-card-header" style="overflow-y: auto;">
+                <div class="chat-container">
+                    {% for message in conversation.conversation %}
+                    <div class="messages {% if message.role == 'user' %}mine{% else %}yours{% endif %}">
+                        <div class="message last">{{ message.content|nl2br }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+</div>
+
+<!-- Pagination -->
+<div class="row">
+  <div class="col-12">
+    <nav aria-label="Page navigation">
+      <ul class="pagination justify-content-center">
+        <li class="page-item disabled">
+          <span class="page-link">Total Results: {% if total >= 10000 %}&ge; 10000{% else %}{{ total }}{% endif %}</span>
+        </li>
+        {% for page_num in pages %}
+          {% if page_num == '...' %}
+            <li class="page-item disabled"><span class="page-link">...</span></li>
+          {% else %}
+            <li class="page-item {% if page_num == page %}active{% endif %}">
+            <a class="page-link" href="{% set params = [] %}{% if contains %}{% do params.append('contains=' ~ contains|urlencode) %}{% endif %}{% for key, value in filters.items() if value %}{% do params.append(key ~ '=' ~ value|urlencode) %}{% endfor %}{% if page_num != 1 %}{% do params.append('page=' ~ page_num) %}{% endif %}{% if params|length > 0 %}?{{ params|join('&') }}{% endif %}">{{ page_num }}</a>
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    </nav>
+  </div>
+</div>
+
+<script src="static/js/modules/urlParams.js"></script>
+<script src="static/js/modules/typeaheadSetup.js"></script>
+<script src="static/js/modules/lazyLoad.js"></script>
+<script src="static/js/data/persistor.js"></script>
+<script src="static/js/data/wrangle.js"></script>
+<!--script src="static/js/views/papers.js"></script-->
+<script>
+  $(document).ready(function () {
+    //tippy("[data-tippy-content]", { trigger: "mouseenter focus" });
+    //start();
+    function updateUrlParams() {
+      let urlParams = new URLSearchParams(window.location.search);
+      // Get the raw values directly from the input fields
+      let contains = $('#search-input').val();
+      if (contains) {
+        urlParams.set('contains', contains);
+      } else {
+        urlParams.delete('contains');
+      }
+
+      let toxic = $('#filter-toxic').val();
+      if (toxic) {
+        urlParams.set('toxic', toxic);
+      } else {
+        urlParams.delete('toxic');
+      }
+
+      let model = $('#filter-model').val();
+      if (model) {
+        urlParams.set('model', model);
+      } else {
+        urlParams.delete('model');
+      }
+
+      let redacted = $('#filter-redacted').val();
+      if (redacted) {
+        urlParams.set('redacted', redacted);
+      } else {
+        urlParams.delete('redacted');
+      }
+
+      let hashedIp = $('#filter-hashed-ip').val();
+      if (hashedIp) {
+        urlParams.set('hashed_ip', hashedIp);
+      } else {
+        urlParams.delete('hashed_ip');
+      }
+
+      let language = $('#filter-language').val();
+      if (language) {
+        urlParams.set('language', language);
+      } else {
+        urlParams.delete('language');
+      }
+
+      let country = $('#filter-country').val();
+      if (country) {
+        urlParams.set('country', country);
+      } else {
+        urlParams.delete('country');
+      }
+
+      let state = $('#filter-state').val();
+      if (state) {
+        urlParams.set('state', state);
+      } else {
+        urlParams.delete('state');
+      }
+
+      let minTurns = $('#filter-min-turns').val();
+      if (minTurns) {
+        urlParams.set('min_turns', minTurns);
+      } else {
+        urlParams.delete('min_turns');
+      }
+
+      // Reset the page number to 1 when updating filters
+      urlParams.set('page', 1);
+      urlParams.delete('page');
+      let containsString = Array.from(urlParams.entries())
+                          .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+                          .join('&');
+      window.location.search = containsString;
+    }
+
+    function handleEnterKey(event) {
+      if (event.key === 'Enter') {
+        updateUrlParams();
+      }
+    }
+
+    function checkInputs() {
+        $('.filter-input').each(function () {
+            let $input = $(this);
+            let $button = $input.parent().find('.add-filter');
+            if ($input.val().trim() === '') {
+                $button.prop('disabled', true);
+            } else {
+                $button.prop('disabled', false);
+            }
+        });
+    }
+
+    // Function to set form values based on URL parameters
+    function setFormValuesFromUrlParams() {
+        let urlParams = new URLSearchParams(window.location.search);
+        $('#search-input').val(decodeURIComponent(urlParams.get('contains') || ''));
+        $('#filter-toxic').val(decodeURIComponent(urlParams.get('toxic') || ''));
+        $('#filter-redacted').val(decodeURIComponent(urlParams.get('redacted') || ''));
+        $('#filter-model').val(decodeURIComponent(urlParams.get('model') || ''));
+        $('#filter-hashed-ip').val(decodeURIComponent(urlParams.get('hashed_ip') || ''));
+        $('#filter-language').val(decodeURIComponent(urlParams.get('language') || ''));
+        $('#filter-country').val(decodeURIComponent(urlParams.get('country') || ''));
+        $('#filter-state').val(decodeURIComponent(urlParams.get('state') || ''));
+        $('#filter-min-turns').val(decodeURIComponent(urlParams.get('min_turns') || ''));
+    }
+
+    // Set form values on page load
+    setFormValuesFromUrlParams();
+
+    // Initial check
+    checkInputs();
+    $('.filter-input').on('keyup change', checkInputs);
+    $('.add-filter').click(updateUrlParams);
+    $('.filter-input').on('keypress', handleEnterKey);
+
+    $('.remove-filter').click(function() {
+      let filter = $(this).data('filter');
+      let urlParams = new URLSearchParams(window.location.search);
+      urlParams.delete(filter);
+      urlParams.set('page', 1);
+      urlParams.delete('page');
+      let containsString = Array.from(urlParams.entries())
+                          .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+                          .join('&');
+      window.location.search = containsString;
+    });
+
+    $('.typeahead_all_clear').click(function() {
+      window.location.href = '/';
+    });
+  });
+</script>
+
+{% endblock %}
+
+{% block footer %}
 
 {% endblock %}

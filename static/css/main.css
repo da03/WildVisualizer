@@ -60,6 +60,15 @@ body {
   border: 4px solid #eee;
   font-family: "Exo";
   height: 340px;
+  padding-top: 0px;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.pp-card-header-metadata {
+  border: 4px solid #eee;
+  font-family: "Exo";
+  height: 85px;
   padding-top: 10px;
   padding-left: 15px;
   padding-right: 15px;

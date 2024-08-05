@@ -2,13 +2,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-G17CGSMBNY"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+    
+      gtag('config', 'G-G17CGSMBNY');
+    </script>
     {% block head %}
     <!-- Required meta tags -->
-    <meta charset="utf-8"/>
+    <meta charset="utf-8">
     <meta
             name="viewport"
             content="width=device-width, initial-scale=1, shrink-to-fit=no"
-    />
+    >
 
     <!-- External Javascript libs_ext  -->
     <script src="https://cdn.jsdelivr.net/npm/d3@5/dist/d3.min.js"></script>
@@ -41,11 +50,11 @@
 
 
     <!-- Library libs_ext -->
-    <script src="static/js/libs_ext/typeahead.bundle.js"></script>
+    <script src="/static/js/libs_ext/typeahead.bundle.js"></script>
 
 
     <!--    Internal Libs -->
-    <script src="static/js/data/api.js"></script>
+    <script src="/static/js/data/api.js"></script>
 
     {% if config.use_auth0 %}
     <script>
@@ -53,7 +62,7 @@
       var auth0_client_id = "{{config.auth0_client_id}}";
     </script>
     <script src="https://cdn.auth0.com/js/auth0-spa-js/1.7/auth0-spa-js.production.js"></script>
-    <script src="static/js/modules/auth0protect.js"></script>
+    <script src="/static/js/modules/auth0protect.js"></script>
     {% endif %}
 
     <!-- External CSS -->
@@ -64,22 +73,21 @@
 
     <!-- External Fonts (no google for china) -->
     <link
-            href="static/css/Lato.css"
+            href="/static/css/Lato.css"
             rel="stylesheet"
-    />
-    <link href="static/css/Exo.css" rel="stylesheet"/>
+    >
+    <link href="/static/css/Exo.css" rel="stylesheet">
     <link
-            href="static/css/Cuprum.css"
+            href="/static/css/Cuprum.css"
             rel="stylesheet"
-    />
-    <link rel="stylesheet" href="static/css/main.css"/>
-<!--    <link rel="stylesheet" href="static/css/fa_regular.css"/>-->
-    <link rel="stylesheet" href="static/css/fa_solid.css"/>
-    <link rel="stylesheet" href="static/css/lazy_load.css"/>
-    <link rel="stylesheet" href="static/css/typeahead.css"/>
+    >
+    <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="stylesheet" href="/static/css/fa_solid.css">
+    <link rel="stylesheet" href="/static/css/lazy_load.css">
+    <link rel="stylesheet" href="/static/css/typeahead.css">
+    <link rel="stylesheet" href="/static/css/conversation.css">
 
-    <title>{{config.page_title.prefix}}{% if page_title
-        %}{{config.page_title.separator}}{{page_title}}{% endif %}</title>
+    <title>{{config.page_title.prefix}}</title>
     {% endblock %}
 </head>
 
@@ -88,14 +96,9 @@
 {% block header %}
 {% set navigation_bar = [
 ('index.html', 'Home'),
-('calendar.html', 'Schedule'),
-('papers.html', 'Papers'),
-('workshops.html', 'Workshops'),
-('chat.html', 'Chat'),
-('help.html', 'Help'),
 ] -%}
 
-<nav
+<!--nav
         class="navbar sticky-top navbar-expand-lg navbar-light bg-light mr-auto"
         id="main-nav"
 >
@@ -134,7 +137,7 @@
             </ul>
         </div>
     </div>
-</nav>
+</nav-->
 {% endblock %}
 
 {% block body %}
@@ -142,6 +145,22 @@
 {% block top %} {% endblock %}
 
 <div class="container">
+<!-- Main Heading -->
+<div class="row">
+    <div class="col-12 text-center">
+        <h2>What Do People Use ChatGPT For?</h2>
+    </div>
+</div>
+
+<!-- Links to Paper and Dataset -->
+<div class="row">
+    <div class="col-12 text-center">
+        <a href="https://arxiv.org/abs/2405.01470" target="_blank" class="btn btn-outline-primary m-2">WildChat Paper</a>
+        <a href="https://huggingface.co/datasets/allenai/WildChat-1M" target="_blank" class="btn btn-outline-primary m-2">WildChat Dataset</a>
+	<a href="https://huggingface.co/spaces/yuntian-deng/ChatGPT4" target="_blank" class="btn btn-outline-primary m-2">Free GPT-4 Chatbot</a>
+    </div>
+</div>
+<div class="row p-3"></div>
     <!-- Tabs -->
     <div class="tabs">
         {% block tabs %} {% endblock %}
@@ -195,7 +214,7 @@
     });
   });
 </script>
-<!--    <script src="static/js/modules/lazyLoad.js"></script>-->
+<!--    <script src="/static/js/modules/lazyLoad.js"></script>-->
 {% endblock %}
 </body>
 </html>

@@ -20,7 +20,8 @@ const MODE = {
 }
 
 
-let render_mode = MODE.compact;
+//let render_mode = MODE.compact;
+let render_mode = MODE.mini;
 
 const updateCards = (papers) => {
   Promise.all([
