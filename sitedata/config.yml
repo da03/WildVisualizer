@@ -11,7 +11,7 @@ logo:
 # uncomment the following line to show the site title next to the logo image
 # site_title: MiniConf
 page_title:
-  prefix: 'WildChat Visualizer'
+  prefix: 'WildVis'
   separator: ''
 background_image: static/images/main.jpg
 organization: MiniConf Organization Committee

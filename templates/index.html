@@ -67,7 +67,19 @@
     </div>
     <div class="col-12 col-sm-6 col-md-4">
         <div class="input-group mb-3">
-            <input type="text" id="filter-language" class="form-control filter-input" placeholder="Language" value="{{ filters.language }}">
+            <input type="text" id="filter-language" class="form-control filter-input" placeholder="Language" value="{{ filters.language }}" list="language-options">
+            <datalist id="language-options">
+                <option value="English">
+                <option value="Chinese">
+                <option value="Russian">
+                <option value="French">
+                <option value="Spanish">
+                <option value="Portuguese">
+                <option value="German">
+                <option value="Arabic">
+                <option value="Italian">
+                <option value="Turkish">
+            </datalist>
             <div class="input-group-append">
                 <button class="btn btn-outline-secondary add-filter" type="button" data-filter="language">+</button>
             </div>
@@ -75,7 +87,18 @@
     </div>
     <div class="col-12 col-sm-6 col-md-4">
         <div class="input-group mb-3">
-            <input type="text" id="filter-country" class="form-control filter-input" placeholder="Country" value="{{ filters.country }}">
+            <input type="text" id="filter-country" class="form-control filter-input" placeholder="Country" value="{{ filters.country }}" list="country-options">
+            <datalist id="country-options">
+                <option value="United States">
+                <option value="Russia">
+                <option value="China">
+                <option value="Hong Kong">
+                <option value="United Kingdom">
+                <option value="Germany">
+                <option value="France">
+                <option value="Japan">
+                <option value="Canada">
+            </datalist>
             <div class="input-group-append">
                 <button class="btn btn-outline-secondary add-filter" type="button" data-filter="country">+</button>
             </div>
@@ -124,6 +147,19 @@
             </div>
         </div>
     </div>
+    <div class="col-12 col-sm-6 col-md-4">
+    <div class="input-group mb-3">
+        <select id="filter-dataset" class="form-control filter-input" required>
+            <option value="" {% if not filters.dataset %}selected{% endif %}>Dataset</option>
+            <option value="wildchat" {% if filters.dataset == 'wildchat' %}selected{% endif %}>WildChat</option>
+            <option value="lmsyschat" {% if filters.dataset == 'lmsyschat' %}selected{% endif %}>LMSYS-Chat-1M</option>
+        </select>
+        <div class="input-group-append">
+            <button class="btn btn-outline-secondary add-filter" type="button" data-filter="dataset">+</button>
+        </div>
+    </div>
+</div>
+
 </div>
 
 <div class="row">
@@ -169,15 +205,27 @@
     <div class="myCard col-xs-6 col-md-4">
         <div class="pp-card pp-mode-detail ">
             <div class="pp-card-header-metadata" style="">
-                <h6 class="card-subtitle text-center" style="overflow-x: auto;"><a target="_blank" href="/conversation/{{ conversation.conversation[0].turn_identifier }}">Conversation Id {{ conversation.conversation[0].turn_identifier }}</a></h6>
+                <h6 class="card-subtitle text-center" style="overflow-x: auto;"><a target="_blank" href="/conversation/{{ conversation.dataset }}/{{ conversation.conversation_id }}">Conversation Id {{ conversation.conversation_id }}</a></h6>
+                {% if conversation.timestamp %}
                 <h6 class="card-subtitle text-muted" style="margin-top: 0; overflow-x: auto;">Time: {{ conversation.timestamp }}</h6>
-		<h6 class="card-subtitle text-muted" style="margin-top: 0">
+                {% endif %}
+                {% if conversation.country %}
+		        <h6 class="card-subtitle text-muted" style="margin-top: 0">
                     <a target="_blank" href="?state={{ conversation.state }}&country={{ conversation.country }}">{{ conversation.state }}</a>,
                     <a target="_blank" href="?country={{ conversation.country }}">{{ conversation.country }}</a>
                 </h6>
+                {% endif %}
+
+                {% if conversation.hashed_ip %}
                 <h6 class="card-subtitle text-muted" style="margin-top: 0; overflow-x: auto;"><a target="_blank" href="?hashed_ip={{ conversation.hashed_ip }}">IP Hash: {{ conversation.hashed_ip }}</a></h6>
+                {% endif %}
                 <h6 class="card-subtitle text-muted" style="margin-top: 0; overflow-x: auto;"><a target="_blank" href="?model={{ conversation.model }}">Model: {{ conversation.model }}</a></h6>
                 <h6 class="card-subtitle text-muted" style="margin-top: 0; overflow-x: auto;">
+                {% if conversation.dataset == 'lmsyschat' %}
+                <a target="_blank" href="/?dataset=lmsyschat" class="badge badge-info">LMSYS-Chat</a>
+                {% elif conversation.dataset == 'wildchat' %}
+                <a target="_blank" href="/?dataset=wildchat" class="badge badge-success">WildChat</a>
+                {% endif %}
                 {% if conversation.toxic %}<a target="_blank" href="/?toxic=true" class="badge badge-danger">Toxic</a>{% endif %}
                 {% if conversation.redacted %}<a target="_blank" href="/?redacted=true" class="badge badge-danger">Contains personal info</a>{% endif %}
                 </h6>
@@ -259,6 +307,13 @@
         urlParams.delete('redacted');
       }
 
+     let dataset = $('#filter-dataset').val();
+     if (dataset) {
+         urlParams.set('dataset', dataset);
+     } else {
+         urlParams.delete('dataset');
+     }
+
       let hashedIp = $('#filter-hashed-ip').val();
       if (hashedIp) {
         urlParams.set('hashed_ip', hashedIp);
@@ -327,6 +382,7 @@
         $('#search-input').val(decodeURIComponent(urlParams.get('contains') || ''));
         $('#filter-toxic').val(decodeURIComponent(urlParams.get('toxic') || ''));
         $('#filter-redacted').val(decodeURIComponent(urlParams.get('redacted') || ''));
+        $('#filter-dataset').val(decodeURIComponent(urlParams.get('dataset') || ''));
         $('#filter-model').val(decodeURIComponent(urlParams.get('model') || ''));
         $('#filter-hashed-ip').val(decodeURIComponent(urlParams.get('hashed_ip') || ''));
         $('#filter-language').val(decodeURIComponent(urlParams.get('language') || ''));
@@ -340,7 +396,7 @@
 
     // Initial check
     checkInputs();
-    $('.filter-input').on('keyup change', checkInputs);
+    $('.filter-input').on('input keyup change', checkInputs);
     $('.add-filter').click(updateUrlParams);
     $('.filter-input').on('keypress', handleEnterKey);
 
