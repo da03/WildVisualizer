@@ -22,11 +22,11 @@
       role="tab"
       aria-controls="nav-home"
       aria-selected="true"
-      >Conversation Search
+      >Filter-Based Search
     </a>
   </li>
   <li class="nav-item">
-    <a class="nav-link text-muted" href="conversation_vis.html">Similarity Search</a>
+    <a class="nav-link text-muted" href="conversation_vis.html">Embedding Visualization</a>
   </li>
 </ul>
 {% endblock %}
@@ -205,21 +205,21 @@
     <div class="myCard col-xs-6 col-md-4">
         <div class="pp-card pp-mode-detail ">
             <div class="pp-card-header-metadata" style="">
-                <h6 class="card-subtitle text-center" style="overflow-x: auto;"><a target="_blank" href="/conversation/{{ conversation.dataset }}/{{ conversation.conversation_id }}">Conversation Id {{ conversation.conversation_id }}</a></h6>
+                <h6 class="card-subtitle text-center" style="overflow-x: auto;"><a target="_blank" href="/conversation/{{ conversation.dataset|urlencode }}/{{ conversation.conversation_id|urlencode }}">Conversation Id {{ conversation.conversation_id }}</a></h6>
                 {% if conversation.timestamp %}
                 <h6 class="card-subtitle text-muted" style="margin-top: 0; overflow-x: auto;">Time: {{ conversation.timestamp }}</h6>
                 {% endif %}
                 {% if conversation.country %}
 		        <h6 class="card-subtitle text-muted" style="margin-top: 0">
-                    <a target="_blank" href="?state={{ conversation.state }}&country={{ conversation.country }}">{{ conversation.state }}</a>,
-                    <a target="_blank" href="?country={{ conversation.country }}">{{ conversation.country }}</a>
+                    <a target="_blank" href="?state={{ conversation.state|urlencode }}&country={{ conversation.country|urlencode }}">{{ conversation.state }}</a>,
+                    <a target="_blank" href="?country={{ conversation.country|urlencode }}">{{ conversation.country }}</a>
                 </h6>
                 {% endif %}
 
                 {% if conversation.hashed_ip %}
-                <h6 class="card-subtitle text-muted" style="margin-top: 0; overflow-x: auto;"><a target="_blank" href="?hashed_ip={{ conversation.hashed_ip }}">IP Hash: {{ conversation.hashed_ip }}</a></h6>
+                <h6 class="card-subtitle text-muted" style="margin-top: 0; overflow-x: auto;"><a target="_blank" href="?hashed_ip={{ conversation.hashed_ip|urlencode }}">IP Hash: {{ conversation.hashed_ip }}</a></h6>
                 {% endif %}
-                <h6 class="card-subtitle text-muted" style="margin-top: 0; overflow-x: auto;"><a target="_blank" href="?model={{ conversation.model }}">Model: {{ conversation.model }}</a></h6>
+                <h6 class="card-subtitle text-muted" style="margin-top: 0; overflow-x: auto;"><a target="_blank" href="?model={{ conversation.model|urlencode }}">Model: {{ conversation.model }}</a></h6>
                 <h6 class="card-subtitle text-muted" style="margin-top: 0; overflow-x: auto;">
                 {% if conversation.dataset == 'lmsyschat' %}
                 <a target="_blank" href="/?dataset=lmsyschat" class="badge badge-info">LMSYS-Chat</a>
