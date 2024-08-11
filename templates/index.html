@@ -13,14 +13,14 @@
 {% endblock %}
 
 {% block tabs %}
-<ul class="nav nav-pills justify-content-center">
+<ul class="nav nav-pills justify-content-center" role="tablist">
   <li class="nav-item active">
     <a
       class="nav-link text-muted active"
       data-toggle="tab"
-      href="#tab-browse"
+      href="#tab-filter"
       role="tab"
-      aria-controls="nav-home"
+      aria-controls="tab-filter"
       aria-selected="true"
       >Filter-Based Search
     </a>
@@ -36,7 +36,7 @@
 
 
 <!-- Filters -->
-<div class="row">
+<div class="row" id="tab-filter">
     <div class="col-12 col-sm-12 col-md-6 col-lg-4">
         <div class="input-group mb-3">
             <input type="text" class="form-control typeahead_all filter-input" id="search-input" placeholder="Contains" value="{{ contains }}">
@@ -266,11 +266,11 @@
   </div>
 </div>
 
-<script src="static/js/modules/urlParams.js"></script>
-<script src="static/js/modules/typeaheadSetup.js"></script>
-<script src="static/js/modules/lazyLoad.js"></script>
-<script src="static/js/data/persistor.js"></script>
-<script src="static/js/data/wrangle.js"></script>
+<script src="/static/js/modules/urlParams.js"></script>
+<script src="/static/js/modules/typeaheadSetup.js"></script>
+<script src="/static/js/modules/lazyLoad.js"></script>
+<script src="/static/js/data/persistor.js"></script>
+<script src="/static/js/data/wrangle.js"></script>
 <!--script src="static/js/views/papers.js"></script-->
 <script>
   $(document).ready(function () {

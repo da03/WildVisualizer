@@ -419,33 +419,33 @@ def paper_json():
         json.append(format_paper(v))
     return jsonify(json)
 
-@app.route("/serve_<path>.json")
-def serve(path):
-    json_path = f"sitedata/{path}.json"
-    gz_path = f"sitedata/{path}.json.gz"
-
-    # Check if the compressed version exists
-    if False and os.path.exists(gz_path):
-        return send_file(gz_path, mimetype='application/json', as_attachment=False)
-    elif os.path.exists(json_path):
-        return send_file(json_path, mimetype='application/json', as_attachment=False)
-    else:
-        abort(404)  # File not found
+#@app.route("/serve_<path>.json")
+#def serve(path):
+#    json_path = f"sitedata/{path}.json"
+#    gz_path = f"sitedata/{path}.json.gz"
+#
+#    # Check if the compressed version exists
+#    if False and os.path.exists(gz_path):
+#        return send_file(gz_path, mimetype='application/json', as_attachment=False)
+#    elif os.path.exists(json_path):
+#        return send_file(json_path, mimetype='application/json', as_attachment=False)
+#    else:
+#        abort(404)  # File not found
     #return jsonify(site_data[path])
-@app.route("/serve_<path>.json.gz")
-def serve_gz(path):
-    gz_path = f"sitedata/{path}.json.gz"
-    json_path = f"sitedata/{path}.json"
-
-    # Check if the compressed version exists
-    if os.path.exists(gz_path):
-        @after_this_request
-        def add_header(response):
-            response.headers['Content-Encoding'] = 'gzip'
-            return response
-        return send_file(gz_path, mimetype='application/json', as_attachment=False)
-    else:
-        abort(404)  # File not found
+#@app.route("/serve_<path>.json.gz")
+#def serve_gz(path):
+#    gz_path = f"sitedata/{path}.json.gz"
+#    json_path = f"sitedata/{path}.json"
+#
+#    # Check if the compressed version exists
+#    if os.path.exists(gz_path):
+#        @after_this_request
+#        def add_header(response):
+#            response.headers['Content-Encoding'] = 'gzip'
+#            return response
+#        return send_file(gz_path, mimetype='application/json', as_attachment=False)
+#    else:
+#        abort(404)  # File not found
 
 def extract_list_field(v, key):
     value = v.get(key, "")

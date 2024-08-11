@@ -1,0 +1,285 @@
+{% set page_title = "Conversation Explorer" %}
+{% extends "base.html" %}
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="/static/css/typeahead.css">
+<link rel="stylesheet" href="/static/css/paper_vis.css">
+<script src="https://cdn.jsdelivr.net/npm/d3@5/dist/d3.min.js"></script>
+{#
+  <script src="https://cdn.jsdelivr.net/npm/handlebars@4.7.3/dist/handlebars.min.js" integrity="sha256-/PJBs6QWvXijOFIX04kZpLb6ZtSQckdOIavLWKKOgXU=" crossorigin="anonymous"></script>
+#}
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.4.0/dist/umd/popper.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tippy.js@6.2.3/dist/tippy-bundle.umd.min.js"></script>
+
+<script src="/static/js/libs_ext/typeahead.bundle.js"></script>
+
+    <script src="https://unpkg.com/deck.gl@latest/dist.min.js"></script>
+    <link src="https://unpkg.com/deck.gl@latest/dist/stylesheet.css" rel='stylesheet'>
+    <style>
+      #scatter-plot-area {
+        width: 900px;
+        height: 440px;
+        margin: 0;
+      }
+    </style>
+{% endblock %}
+{% block tabs %}
+<ul class="nav nav-pills justify-content-center" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link text-muted" href="/">Filter-Based Search</a>
+  </li>
+  <li class="nav-item active" style="background-color: #bed972;">
+    <a
+      class="nav-link text-muted"
+      data-toggle="tab"
+      href="#tab-embedding"
+      role="tab"
+      aria-controls="tab-embedding"
+      aria-selected="true"
+      >Embedding Visualization
+    </a>
+  </li>
+</ul>
+{% endblock %}
+
+{% block content %}
+<div class="row p-3"></div>
+<div class="row">
+    <div class="col-12 col-sm-12 col-md-6 col-lg-4">
+        <div class="input-group mb-3">
+            <input type="text" class="form-control typeahead_all filter-input" id="search-input" placeholder="Contains" value="{{ contains }}">
+            <div class="input-group-append">
+              <button class="btn btn-outline-secondary add-filter" type="button" data-filter="contains">+</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-md-4">
+        <div class="input-group mb-3">
+            <select id="filter-toxic" class="form-control filter-input" required>
+                <option value="" {% if not filters.toxic %}selected{% endif %}>Toxic</option>
+                <option value="true" {% if filters.toxic == 'true' %}selected{% endif %}>True</option>
+                <option value="false" {% if filters.toxic == 'false' %}selected{% endif %}>False</option>
+            </select>
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary add-filter" type="button" data-filter="toxic">+</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-md-4">
+        <div class="input-group mb-3">
+            <input type="text" id="filter-hashed-ip" class="form-control filter-input" placeholder="Hashed IP" value="{{ filters.hashed_ip }}">
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary add-filter" type="button" data-filter="hashed_ip">+</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-md-4">
+        <div class="input-group mb-3">
+            <input type="text" id="filter-language" class="form-control filter-input" placeholder="Language" value="{{ filters.language }}" list="language-options">
+            <datalist id="language-options">
+                <option value="English">
+                <option value="Chinese">
+                <option value="Russian">
+                <option value="French">
+                <option value="Spanish">
+                <option value="Portuguese">
+                <option value="German">
+                <option value="Arabic">
+                <option value="Italian">
+                <option value="Turkish">
+            </datalist>
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary add-filter" type="button" data-filter="language">+</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-md-4">
+        <div class="input-group mb-3">
+            <input type="text" id="filter-country" class="form-control filter-input" placeholder="Country" value="{{ filters.country }}" list="country-options">
+            <datalist id="country-options">
+                <option value="United States">
+                <option value="Russia">
+                <option value="China">
+                <option value="Hong Kong">
+                <option value="United Kingdom">
+                <option value="Germany">
+                <option value="France">
+                <option value="Japan">
+                <option value="Canada">
+            </datalist>
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary add-filter" type="button" data-filter="country">+</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-md-4">
+        <div class="input-group mb-3">
+            <input type="text" id="filter-state" class="form-control filter-input" placeholder="State" value="{{ filters.state }}">
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary add-filter" type="button" data-filter="state">+</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-md-4">
+        <div class="input-group mb-3">
+            <input type="number" id="filter-min-turns" class="form-control filter-input" placeholder="Min Turns" value="{{ filters.min_turns }}">
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary add-filter" type="button" data-filter="min_turns">+</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-md-4">
+        <div class="input-group mb-3">
+            <select id="filter-model" class="form-control filter-input" required>
+                <option value="" {% if not filters.model %}selected{% endif %}>Model</option>
+                <option value="gpt-4-1106-preview" {% if filters.model == 'gpt-4-1106-preview' %}selected{% endif %}>gpt-4-1106-preview</option>
+                <option value="gpt-4-0314" {% if filters.model == 'gpt-4-0314' %}selected{% endif %}>gpt-4-0314</option>
+                <option value="gpt-3.5-turbo-0613" {% if filters.model == 'gpt-3.5-turbo-0613' %}selected{% endif %}>gpt-3.5-turbo-0613</option>
+                <option value="gpt-3.5-turbo-0301" {% if filters.model == 'gpt-3.5-turbo-0301' %}selected{% endif %}>gpt-3.5-turbo-0301</option>
+                <option value="gpt-3.5-turbo-0125" {% if filters.model == 'gpt-3.5-turbo-0125' %}selected{% endif %}>gpt-3.5-turbo-0125</option>
+            </select>
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary add-filter" type="button" data-filter="model">+</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-md-4">
+        <div class="input-group mb-3">
+            <select id="filter-redacted" class="form-control filter-input" required>
+                <option value="" {% if not filters.redacted %}selected{% endif %}>Contains Personal Info</option>
+                <option value="true" {% if filters.redacted == 'true' %}selected{% endif %}>True</option>
+                <option value="false" {% if filters.redacted == 'false' %}selected{% endif %}>False</option>
+            </select>
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary add-filter" type="button" data-filter="redacted">+</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-md-4">
+    <div class="input-group mb-3">
+        <select id="filter-dataset" class="form-control filter-input" required>
+            <option value="" {% if not filters.dataset %}selected{% endif %}>Dataset</option>
+            <option value="wildchat" {% if filters.dataset == 'wildchat' %}selected{% endif %}>WildChat</option>
+            <option value="lmsyschat" {% if filters.dataset == 'lmsyschat' %}selected{% endif %}>LMSYS-Chat-1M</option>
+        </select>
+        <div class="input-group-append">
+            <button class="btn btn-outline-secondary add-filter" type="button" data-filter="dataset">+</button>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div id="current-filters">
+            <h5>Filters Applied:</h5>
+            <ul class="list-inline">
+                {% if contains %}
+                <li class="list-inline-item">
+                  <span class="badge badge-primary">
+                    Contains: {{ contains }}
+                    <a href="javascript:void(0)" class="remove-filter btn btn-outline-secondary" data-filter="contains">&times;</a>
+                  </span>
+                </li>
+                {% endif %}
+                {% for key, value in filters.items() %}
+                    {% if value %}
+                    <li class="list-inline-item">
+                      <span class="badge badge-primary">
+                        {% if key == 'redacted' %}
+                          Contains personal info: {{ value }}
+                        {% else %}
+                          {{ key|capitalize }}: {{ value }}
+                        {% endif %}
+                        <a href="javascript:void(0)" class="remove-filter btn btn-outline-secondary" data-filter="{{ key }}">&times;</a>
+                      </span>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                {% if not contains and not any_filters %}
+                <li class="list-inline-item">
+                <span class="badge badge-secondary">None</span>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="container-lg" id="container" style="padding-top: 20px;">
+  <div class="row py-1" style="text-align: center;">
+    <div class="card" style="margin-right: -40px;">
+      <div class="card-header row" id="tab-embedding">
+        <div id="scatter-plot-area" style="vertical-align: top;" class="col-md-10 col-sm-12">
+        <div id="scatter-plot" style=" height: 100%; width: 100%; margin: 0; padding: 0; overflow: hidden; position: relative;">
+        </div>
+        <div id="zoom-controls">
+          <button id="zoom-out" class="btn btn-secondary btn-sm" style="color: #6c757d;" onmouseover="this.style.color='#fff';" onmouseout="this.style.color='#6c757d';">-</button>
+          <button id="zoom-in" class="btn btn-secondary btn-sm" style="color: #6c757d;" onmouseover="this.style.color='#fff';" onmouseout="this.style.color='#6c757d';">+</button>
+        </div>
+
+        </div>
+        <!--div id="scatter-plot" style="display: inline-block; vertical-align: top;"-->
+          <!--svg class="plot" style="display: block;"></svg-->
+        <!--/div-->
+        <div
+          class="col-md-2 col-sm-12"
+          style="display: inline-block; vertical-align: top; text-align: left;"
+        >
+          <div style="display: block; overflow-y: auto;" id="table_info">
+            <div id="explain_text_plot">
+              <p>
+                Each dot is a conversation (green: wildchat, blue: lmsyschat).
+              </p>
+              <p><b>Hovering</b> over a dot shows the first user turn.</p>
+              <p>
+                <b>Clicking</b> on a dot takes you to the full conversation.
+              </p>
+              <p>
+                <b>Searching</b> for conversations highlights matches in red.
+              </p>
+            </div>
+            <div id="summary_selection" style=""></div>
+            <div style="overflow-y: auto; bottom: 0; margin-top: 5pt;">
+              <div id="sel_papers"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row p-3"></div>
+
+<script src="/static/js/modules/urlParams.js"></script>
+<script src="/static/js/modules/typeaheadSetup.js"></script>
+<script src="/static/js/data/persistor.js"></script>
+<script src="/static/js/data/wrangle.js"></script>
+<!--script src="/static/js/views/paper_vis.js"></script-->
+<script src="/static/js/views/conversation_vis.js"></script>
+
+<script>
+  $(document).ready(function () {
+    //start();
+    //tippy("[data-tippy-content]", { trigger: "mouseenter focus" });
+  });
+</script>
+{% endblock %}
+
+{% block footer %}
+
+<!--div
+  class="gdpr bg-dark text-light"
+  style="padding: 10pt; position: fixed; bottom: 0; display: none;"
+>
+  We use cookies to store which papers have been visited.
+  <div class="gdpr-btn btn btn-sm btn-info" style="margin-left: 15pt;">
+    I agree
+  </div>
+</div-->
+<!--script src="static/js/modules/gdprCookies.js"></script-->
+
+{% endblock %}
