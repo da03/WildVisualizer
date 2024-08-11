@@ -383,8 +383,8 @@ def search_embeddings():
         conversation_embeddings[str(conversation_id)] = {'i': conversation_id, 'e': [round(float(embedding_2d[0]), 4), round(float(embedding_2d[1]), 4)], 'c': conversation['conversation'][0]['content'], 'd': dataset}
     return jsonify(conversation_embeddings)
 
-@app.route("/conversation_vis.html")
-def conversation_vis():
+@app.route("/embeddings.html")
+def embeddings():
     data = _data()
     data = _data()
     contains = request.args.get('contains', '')
@@ -411,13 +411,13 @@ def conversation_vis():
         "filters": filters,
         "any_filters": any_filters
     })
-    return render_template("conversation_vis.html", **data)
-@app.route("/papers.json")
-def paper_json():
-    json = []
-    for v in site_data["papers"]:
-        json.append(format_paper(v))
-    return jsonify(json)
+    return render_template("embeddings.html", **data)
+#@app.route("/papers.json")
+#def paper_json():
+#    json = []
+#    for v in site_data["papers"]:
+#        json.append(format_paper(v))
+#    return jsonify(json)
 
 #@app.route("/serve_<path>.json")
 #def serve(path):
