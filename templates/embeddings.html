@@ -17,7 +17,7 @@
 <script src="/static/js/libs_ext/typeahead.bundle.js"></script>
 
     <script src="https://unpkg.com/deck.gl@latest/dist.min.js"></script>
-    <link src="https://unpkg.com/deck.gl@latest/dist/stylesheet.css" rel='stylesheet'>
+    <link href="https://unpkg.com/deck.gl@latest/dist/stylesheet.css" rel='stylesheet'>
     <style>
       #scatter-plot-area {
         width: 900px;
@@ -31,7 +31,7 @@
   <li class="nav-item">
     <a class="nav-link text-muted" href="/">Filter-Based Search</a>
   </li>
-  <li class="nav-item active" style="background-color: #bed972;">
+  <!--li class="nav-item active" style="background-color: #bed972;">
     <a
       class="nav-link text-muted"
       data-toggle="tab"
@@ -41,6 +41,24 @@
       aria-selected="true"
       >Embedding Visualization
     </a>
+  </li-->
+  <li class="nav-item dropdown active" style="background-color: #bed972;">
+    <a class="nav-link dropdown-toggle text-muted" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+      Embedding Visualization ({{ visualization_language|capitalize }})
+    </a>
+    <div class="dropdown-menu">
+      <a class="dropdown-item {% if visualization_language == 'all' %}active{% endif %}" href="/embeddings">All Languages</a>
+      <a class="dropdown-item {% if visualization_language == 'english' %}active{% endif %}" href="/embeddings/english">English</a>
+      <a class="dropdown-item {% if visualization_language == 'russian' %}active{% endif %}" href="/embeddings/russian">Russian</a>
+      <a class="dropdown-item {% if visualization_language == 'chinese' %}active{% endif %}" href="/embeddings/chinese">Chinese</a>
+      <a class="dropdown-item {% if visualization_language == 'spanish' %}active{% endif %}" href="/embeddings/spanish">Spanish</a>
+      <a class="dropdown-item {% if visualization_language == 'german' %}active{% endif %}" href="/embeddings/german">German</a>
+      <a class="dropdown-item {% if visualization_language == 'french' %}active{% endif %}" href="/embeddings/french">French</a>
+      <a class="dropdown-item {% if visualization_language == 'portuguese' %}active{% endif %}" href="/embeddings/portuguese">Portuguese</a>
+      <a class="dropdown-item {% if visualization_language == 'italian' %}active{% endif %}" href="/embeddings/italian">Italian</a>
+      <a class="dropdown-item {% if visualization_language == 'japanese' %}active{% endif %}" href="/embeddings/japanese">Japanese</a>
+      <a class="dropdown-item {% if visualization_language == 'korean' %}active{% endif %}" href="/embeddings/korean">Korean</a>
+    </div>
   </li>
 </ul>
 {% endblock %}
@@ -81,14 +99,17 @@
             <input type="text" id="filter-language" class="form-control filter-input" placeholder="Language" value="{{ filters.language }}" list="language-options">
             <datalist id="language-options">
                 <option value="English">
-                <option value="Chinese">
                 <option value="Russian">
-                <option value="French">
+                <option value="Chinese">
                 <option value="Spanish">
-                <option value="Portuguese">
                 <option value="German">
-                <option value="Arabic">
+                <option value="French">
+                <option value="Portuguese">
                 <option value="Italian">
+                <option value="Japanese">
+                <option value="Korean">
+                <option value="Polish">
+                <option value="Arabic">
                 <option value="Turkish">
             </datalist>
             <div class="input-group-append">
@@ -212,14 +233,20 @@
 <div class="container-lg" id="container" style="padding-top: 20px;">
   <div class="row py-1" style="text-align: center;">
     <div class="card" style="margin-right: -40px;">
-      <div class="card-header row" id="tab-embedding">
+      <div class="card-header row" style="margin-left: 0; margin-right: 0;" id="tab-embedding">
         <div id="scatter-plot-area" style="vertical-align: top;" class="col-md-10 col-sm-12">
-        <div id="scatter-plot" style=" height: 100%; width: 100%; margin: 0; padding: 0; overflow: hidden; position: relative;">
-        </div>
-        <div id="zoom-controls">
+          <div id="scatter-plot" style=" height: 100%; width: 100%; margin: 0; padding: 0; overflow: hidden; position: relative;">
+          </div>
+          <div id="zoom-controls">
+            <button id="zoom-out" class="btn btn-secondary btn-sm" style="color: #6c757d; width: auto; padding-left: 8px; padding-right: 8px;" onmouseover="this.style.color='#fff';" onmouseout="this.style.color='#6c757d';">-</button>
+            <button id="zoom-reset" class="btn btn-secondary btn-sm" style="color: #6c757d; width: auto; padding-left: 5px; padding-right: 5px;" onmouseover="this.style.color='#fff';" onmouseout="this.style.color='#6c757d';"><i class="fas fa-sync"></i></button>
+            <button id="zoom-in" class="btn btn-secondary btn-sm" style="color: #6c757d; width: auto; padding-left: 8px; padding-right: 8px;" onmouseover="this.style.color='#fff';" onmouseout="this.style.color='#6c757d';">+</button>
+          </div>
+        <!--div id="zoom-controls">
           <button id="zoom-out" class="btn btn-secondary btn-sm" style="color: #6c757d;" onmouseover="this.style.color='#fff';" onmouseout="this.style.color='#6c757d';">-</button>
+          <button id="zoom-reset" class="btn btn-secondary btn-sm" style="color: #6c757d;" onmouseover="this.style.color='#fff';" onmouseout="this.style.color='#6c757d';">-</button>
           <button id="zoom-in" class="btn btn-secondary btn-sm" style="color: #6c757d;" onmouseover="this.style.color='#fff';" onmouseout="this.style.color='#6c757d';">+</button>
-        </div>
+        </div-->
 
         </div>
         <!--div id="scatter-plot" style="display: inline-block; vertical-align: top;"-->
@@ -259,6 +286,9 @@
 <script src="/static/js/data/persistor.js"></script>
 <script src="/static/js/data/wrangle.js"></script>
 <!--script src="/static/js/views/paper_vis.js"></script-->
+<script>
+    window.visualizationLanguage = "{{ visualization_language }}";
+</script>
 <script src="/static/js/views/embeddings.js"></script>
 
 <script>
@@ -270,16 +300,4 @@
 {% endblock %}
 
 {% block footer %}
-
-<!--div
-  class="gdpr bg-dark text-light"
-  style="padding: 10pt; position: fixed; bottom: 0; display: none;"
->
-  We use cookies to store which papers have been visited.
-  <div class="gdpr-btn btn btn-sm btn-info" style="margin-left: 15pt;">
-    I agree
-  </div>
-</div-->
-<!--script src="static/js/modules/gdprCookies.js"></script-->
-
 {% endblock %}

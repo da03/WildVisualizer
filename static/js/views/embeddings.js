@@ -1,4 +1,5 @@
 $(document).ready(function () {
+    const visualizationLanguage = window.visualizationLanguage;
     const INITIAL_VIEW_STATE = {
         target: [0, 0, 0],
         longitude: 0,
@@ -38,7 +39,8 @@ $(document).ready(function () {
 
     let allData = [];
 
-    const fetchData = (file) => {
+    const fetchData = (dataset) => {
+		const file = `/static/${visualizationLanguage}/${dataset}_embeddings.json`;
         return fetch(file)
             .then((response) => {
                 if (!response.ok) {
@@ -49,10 +51,29 @@ $(document).ready(function () {
     };
 
     const normalizeData = (data) => {
-        const minX = Math.min(...data.map(d => d.e[0]));
-        const maxX = Math.max(...data.map(d => d.e[0]));
-        const minY = Math.min(...data.map(d => d.e[1]));
-        const maxY = Math.max(...data.map(d => d.e[1]));
+        const getPercentile = (arr, p) => {
+            const sorted = [...arr].sort((a, b) => a - b);
+            const index = Math.floor(sorted.length * p);
+            return sorted[index];
+        };
+
+        const xValues = data.map(d => d.e[0]);
+        const yValues = data.map(d => d.e[1]);
+
+        const medianX = getPercentile(xValues, 0.5);
+        const medianY = getPercentile(yValues, 0.5);
+        const q1X = getPercentile(xValues, 0.25);
+        const q3X = getPercentile(xValues, 0.75);
+        const q1Y = getPercentile(yValues, 0.25);
+        const q3Y = getPercentile(yValues, 0.75);
+        const iqrX = q3X - q1X;
+        const iqrY = q3Y - q1Y;
+
+        // Use 1.5 * IQR for clamping (a common statistical practice)
+        const clampLowerX = medianX - 1.5 * iqrX;
+        const clampUpperX = medianX + 1.5 * iqrX;
+        const clampLowerY = medianY - 1.5 * iqrY;
+        const clampUpperY = medianY + 1.5 * iqrY;
 
         const plot_size = () => {
             const cont = document.getElementById("scatter-plot");
@@ -62,11 +83,18 @@ $(document).ready(function () {
         };
 
         const [pW, pH] = plot_size();
+        const scaleX = pW / (clampUpperX - clampLowerX);
+        const scaleY = pH / (clampUpperY - clampLowerY);
+        const scale = Math.min(scaleX, scaleY);
+    
+        const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+
 
         return data.map(d => ({
             position: [
-                ((d.e[0] - minX) / (maxX - minX)) * pW - pW/2,
-                ((d.e[1] - minY) / (maxY - minY)) * pH - pH/2
+                (d.e[0] - medianX) * scaleX, (d.e[1] - medianY) * scaleY
+                //((d.e[0] - minX) / (maxX - minX)) * pW - pW/2,
+                //((d.e[1] - minY) / (maxY - minY)) * pH - pH/2
             ],
             i: d.i,
             dataset: d.dataset,
@@ -92,7 +120,11 @@ $(document).ready(function () {
             lineWidthUnits: 'pixels',
             lineWidthMinPixels: 1,
             lineWidthMaxPixels: 2,
-            getPosition: (d) => d.position,
+            //getPosition: (d) => d.position,
+            getPosition: (d) => {
+                const z = highlightIds.includes(String(d.i)) ? 0.001 : 0;
+                return [...d.position, z];
+            },
             getRadius: 3,
             getFillColor: (d) => {
                 if (highlightIds.includes(String(d.i))) {
@@ -178,21 +210,28 @@ $(document).ready(function () {
       };
       // Update URL parameters
       for (const [key, value] of Object.entries(filters)) {
-        if (value) {
-          urlParams.set(key, value);
-        } else {
-          urlParams.delete(key);
-        }
+          if (value) {
+              urlParams.set(key, value);
+          } else {
+              urlParams.delete(key);
+          }
       }
-      window.history.replaceState(null, null, "?" + urlParams.toString());
+      const queryString = urlParams.toString();
+      const newUrl = queryString ? "?" + queryString : window.location.pathname;
+      window.history.replaceState(null, null, newUrl);
       updateCurrentFilters();
 
+      const newFilters = {
+          ...filters, // Copy all existing key-value pairs from filters
+          visualization_language: visualizationLanguage
+      };
+
       fetch('/search_embeddings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(filters)
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(newFilters)
       })
       .then((response) => response.json())
       .then((filteredEmbeddings) => {
@@ -206,13 +245,20 @@ $(document).ready(function () {
         }));
 
         // Merge new data with existing data while avoiding duplicates
-        filteredData.forEach(d => {
-          if (!allData.some(nd => nd.i === d.i)) {
-            allData.push(d);
-          }
-        });
+        //filteredData.forEach(d => {
+        //  if (!allData.some(nd => nd.i === d.i)) {
+        //    allData.push(d);
+        //  }
+        //});
+        const mergedData = [...allData, ...filteredData].reduce((acc, d) => {
+            // Use d.i as the key in the Map
+            acc.set(d.i, d);
+            return acc;
+        }, new Map());
+        const uniqueDataArray = Array.from(mergedData.values());
 
-        updateLayer(allData, highlightIds);
+
+        updateLayer(uniqueDataArray, highlightIds);
       })
       .catch((error) => {
         console.error('Error fetching filtered embeddings:', error);
@@ -257,13 +303,16 @@ $(document).ready(function () {
         }
         checkInputs();
         urlParams.delete(filter);
-        window.history.replaceState(null, null, "?" + urlParams.toString());
+        const queryString = urlParams.toString();
+        const newUrl = queryString ? "?" + queryString : window.location.pathname;
+        window.history.replaceState(null, null, newUrl);
         updateCurrentFilters();
         applyFilters();
     }
     $('.remove-filter').click(removeFilter);
     // Fetch data for both datasets
-    Promise.all([fetchData('/static/wildchat_embeddings.json'), fetchData('/static/lmsyschat_embeddings.json')])
+    //Promise.all([fetchData('/static/wildchat_embeddings.json'), fetchData('/static/lmsyschat_embeddings.json')])
+    Promise.all([fetchData('wildchat'), fetchData('lmsyschat')])
         .then(([wildchatData, lmsyschatData]) => {
             //console.log('Data loaded:', {wildchatData, lmsyschatData});
             wildchatData.forEach(d => d.dataset = 'wildchat');
@@ -290,6 +339,10 @@ $(document).ready(function () {
 
             $('#zoom-out').on('click', () => {
               currentViewState = {...currentViewState, zoom: currentViewState.zoom-0.5}
+              deckgl.setProps({viewState: currentViewState});
+            });
+            $('#zoom-reset').on('click', () => {
+              currentViewState = {...currentViewState, zoom: 0, target: [0, 0, 0]}
               deckgl.setProps({viewState: currentViewState});
             });
         })

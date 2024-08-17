@@ -319,13 +319,12 @@ body .carousel-control-prev {
 
 #zoom-controls {
   position: absolute;
-  top: 10px;
-  left: 10px;
+  top: 0px;
+  left: 5px;
   z-index: 1000;
 }
 
 #zoom-controls button {
-  margin: 5px;
-  width: 75px;
+  margin: 1px;
 }
 

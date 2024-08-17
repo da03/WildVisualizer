@@ -8,7 +8,7 @@
 <script src="https://cdn.jsdelivr.net/npm/tippy.js@6/dist/tippy-bundle.umd.min.js"></script>
 
 <script src="static/js/modules/icons.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+<!--script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script-->
 
 {% endblock %}
 
@@ -26,7 +26,7 @@
     </a>
   </li>
   <li class="nav-item">
-    <a class="nav-link text-muted" href="embeddings.html">Embedding Visualization</a>
+    <a class="nav-link text-muted" href="/embeddings/english">Embedding Visualization</a>
   </li>
 </ul>
 {% endblock %}
@@ -70,14 +70,17 @@
             <input type="text" id="filter-language" class="form-control filter-input" placeholder="Language" value="{{ filters.language }}" list="language-options">
             <datalist id="language-options">
                 <option value="English">
-                <option value="Chinese">
                 <option value="Russian">
-                <option value="French">
+                <option value="Chinese">
                 <option value="Spanish">
-                <option value="Portuguese">
                 <option value="German">
-                <option value="Arabic">
+                <option value="French">
+                <option value="Portuguese">
                 <option value="Italian">
+                <option value="Japanese">
+                <option value="Korean">
+                <option value="Polish">
+                <option value="Arabic">
                 <option value="Turkish">
             </datalist>
             <div class="input-group-append">

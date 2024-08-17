@@ -10,8 +10,12 @@ import sqlite3
 from openai import OpenAI
 import numpy as np
 import joblib
+from umap.parametric_umap import load_ParametricUMAP
 import tiktoken
-from sklearn.decomposition import PCA
+#from sklearn.decomposition import PCA
+from umap.parametric_umap import ParametricUMAP
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
 
 
 indices = ['wildchat', 'lmsyschat']
@@ -102,8 +106,17 @@ client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 tokenizer = tiktoken.get_encoding('cl100k_base')
 
 # Load the PCA model
-pca = joblib.load('pca_model.pkl')
 
+embedding_projectors = {}
+for folder in glob.glob(os.path.join('umap_model', '*')):
+   scaler_path = os.path.join(folder, 'scaler.pkl')
+   umap_path = folder
+   if os.path.exists(scaler_path):
+       language = os.path.basename(folder)
+       scaler = joblib.load(scaler_path)
+       umap = load_ParametricUMAP(umap_path)
+       embedding_projectors[language] = {'scaler': scaler, 'umap': umap}
+print (embedding_projectors.keys())
 
 def create_database(db_name):
     conn = sqlite3.connect(db_name)
@@ -113,8 +126,8 @@ def create_database(db_name):
     conn.commit()
     conn.close()
 
-create_database('embeddings_cache.db')
-create_database('pca_cache.db')
+#create_database('embeddings_cache.db')
+#create_database('umap_cache.db')
 
 def insert_or_update(db_name, key, prompt, embedding):
     conn = sqlite3.connect(db_name)
@@ -299,6 +312,13 @@ def search_embeddings():
     filters = request.json
     contains = filters['contains']
     del filters['contains']
+    visualization_language = filters['visualization_language']
+    del filters['visualization_language']
+
+    if ('language' not in filters) and (visualization_language != 'all'):
+        filters['language'] = visualization_language
+    scaler = embedding_projectors[language]['scaler']
+    umap = embedding_projectors[language]['umap']
     #print (filters)
     disabled_datasets = []
     for dataset in indices:
@@ -366,9 +386,9 @@ def search_embeddings():
     for conversation in conversations:
         dataset = conversation['dataset']
         conversation_id = conversation['conversation_id']
-        pca_database_name = f'{dataset}_pca_cache.db'
+        umap_database_name = f'{dataset}_umap_cache.db'
         embed_database_name = f'{dataset}_embeddings_cache.db'
-        hit, embedding_2d = retrieve(pca_database_name, conversation_id)
+        hit, embedding_2d = retrieve(umap_database_name, conversation_id)
         if not hit:
             conversation_text = conversation['conversation'][0]['content']
             conversation_text = conversation_text.strip()
@@ -376,17 +396,19 @@ def search_embeddings():
                 continue
             #import pdb; pdb.set_trace()
             embedding = get_embedding_with_cache(embed_database_name, conversation_id, conversation_text, model='text-embedding-3-small')
-            embedding_2d = pca.transform(np.array([embedding]))[0]
-            insert_or_update(pca_database_name, conversation_id, '', [float(embedding_2d[0]), float(embedding_2d[1])])
+            embedding_2d = umap.transform(scaler.transform(np.array([embedding])))[0]
+            insert_or_update(umap_database_name, conversation_id, '', [float(embedding_2d[0]), float(embedding_2d[1])])
         else:
             print ('hit')
         conversation_embeddings[str(conversation_id)] = {'i': conversation_id, 'e': [round(float(embedding_2d[0]), 4), round(float(embedding_2d[1]), 4)], 'c': conversation['conversation'][0]['content'], 'd': dataset}
     return jsonify(conversation_embeddings)
 
-@app.route("/embeddings.html")
-def embeddings():
+
+@app.route("/embeddings/<language>")
+@app.route("/embeddings")
+def embeddings(language=None):
     data = _data()
-    data = _data()
+
     contains = request.args.get('contains', '')
     # Construct the Elasticsearch query
     filters = {
@@ -400,6 +422,10 @@ def embeddings():
         "min_turns": request.args.get('min_turns', ''),
         "conversation_id": request.args.get('conversation_id', '')
     }
+    #if language:
+    #    filters['language'] = language.capitalize()
+    #    any_filters = True
+
     must_clauses = []
     if must_clauses:
         any_filters = True
@@ -409,7 +435,8 @@ def embeddings():
     data.update({
         "contains": contains,
         "filters": filters,
-        "any_filters": any_filters
+        "any_filters": any_filters,
+        "visualization_language": language or "all"
     })
     return render_template("embeddings.html", **data)
 #@app.route("/papers.json")
