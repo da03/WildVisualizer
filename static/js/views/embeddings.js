@@ -1,4 +1,11 @@
 $(document).ready(function () {
+    function showLoading() {
+        document.getElementById('loading-overlay').style.display = 'block';
+    }
+    
+    function hideLoading() {
+        document.getElementById('loading-overlay').style.display = 'none';
+    }
     const visualizationLanguage = window.visualizationLanguage;
     const INITIAL_VIEW_STATE = {
         target: [0, 0, 0],
@@ -193,6 +200,7 @@ $(document).ready(function () {
         $('.remove-filter').click(removeFilter);
     };
 
+
   const applyFilters = () => {
       let urlParams = new URLSearchParams(window.location.search);
       const filters = {
@@ -225,6 +233,8 @@ $(document).ready(function () {
           ...filters, // Copy all existing key-value pairs from filters
           visualization_language: visualizationLanguage
       };
+
+      showLoading();
 
       fetch('/search_embeddings', {
           method: 'POST',
@@ -259,9 +269,11 @@ $(document).ready(function () {
 
 
         updateLayer(uniqueDataArray, highlightIds);
+        hideLoading();
       })
       .catch((error) => {
-        console.error('Error fetching filtered embeddings:', error);
+        //console.error('Error fetching filtered embeddings:', error);
+        hideLoading();
       });
     };
 
@@ -312,6 +324,7 @@ $(document).ready(function () {
     $('.remove-filter').click(removeFilter);
     // Fetch data for both datasets
     //Promise.all([fetchData('/static/wildchat_embeddings.json'), fetchData('/static/lmsyschat_embeddings.json')])
+    showLoading();
     Promise.all([fetchData('wildchat'), fetchData('lmsyschat')])
         .then(([wildchatData, lmsyschatData]) => {
             //console.log('Data loaded:', {wildchatData, lmsyschatData});
@@ -321,6 +334,7 @@ $(document).ready(function () {
             allData = [...wildchatData, ...lmsyschatData];
             updateLayer(allData);
             applyFilters();
+            hideLoading();
 
             function handleEnterKey(event) {
               if (event.key === 'Enter') {
@@ -347,7 +361,8 @@ $(document).ready(function () {
             });
         })
         .catch((error) => {
-            console.error('Error loading data:', error);
+            //console.error('Error loading data:', error);
+            hideLoading();
         });
     // Add tooltip div to HTML
     const tooltipDiv = document.createElement('div');
@@ -367,5 +382,6 @@ $(document).ready(function () {
     tooltipDiv.style.overflowY = 'auto';
     tooltipDiv.style.display = 'none';
     document.body.appendChild(tooltipDiv);
+    //deckgl.canvas.addEventListener('mouseleave', hideTooltip);
 });
 

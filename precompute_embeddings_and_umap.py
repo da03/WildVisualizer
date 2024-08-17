@@ -10,11 +10,20 @@ import tiktoken
 from sklearn.preprocessing import StandardScaler
 from datasets import load_dataset
 from tqdm import tqdm
+import gzip
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 LANGUAGES = ['all', 'english', 'russian', 'chinese', 'spanish', 'german', 'french', 'portuguese', 'italian', 'japanese', 'korean']
 
 client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 tokenizer = tiktoken.get_encoding('cl100k_base')
+
+
+def gzip_file(input_file, output_file):
+    with open(input_file, 'rb') as f_in:
+        with gzip.open(output_file, 'wb') as f_out:
+            f_out.writelines(f_in)
 
 def create_database(db_name):
     conn = sqlite3.connect(db_name)
@@ -58,8 +67,8 @@ def get_embedding_with_cache(database_name, conversation_id, prompt, model='text
             prompt = tokenizer.decode(tokens)
         embedding = client.embeddings.create(input=[prompt], model=model).data[0].embedding
         insert_or_update(database_name, key, json.dumps(prompt), embedding)
-    else:
-        print('Cache hit for embedding')
+    #else:
+    #    print('Cache hit for embedding')
     return embedding
 
 def conditional_reservoir_sample(dataset, n, language=None):
@@ -76,19 +85,39 @@ def conditional_reservoir_sample(dataset, n, language=None):
                     reservoir[j] = item
     return reservoir
 
+
+def process_item(item, dataset_name, embed_db):
+    first_turn = item['conversation'][0]['content'].strip()
+    if not first_turn:
+        return None
+    if dataset_name == 'wildchat':
+        conversation_id = item['conversation'][0]['turn_identifier']
+    else:
+        conversation_id = item['conversation_id']
+    embedding = get_embedding_with_cache(embed_db, conversation_id, first_turn)
+
 def process_language(wildchat_dataset, lmsyschat_dataset, language):
     wildchat_embed_db = 'wildchat_embeddings_cache.db'
     lmsyschat_embed_db = 'lmsyschat_embeddings_cache.db'
     
     random.seed(1234)
-    wildchat_sampled = conditional_reservoir_sample(wildchat_dataset, 15000, language if language != 'all' else None)
+    wildchat_sampled = conditional_reservoir_sample(wildchat_dataset, 50000, language if language != 'all' else None)
     random.seed(1234)
-    lmsyschat_sampled = conditional_reservoir_sample(lmsyschat_dataset, 15000, language if language != 'all' else None)
+    lmsyschat_sampled = conditional_reservoir_sample(lmsyschat_dataset, 50000, language if language != 'all' else None)
     random.seed(1234)
-    wildchat_sampled = wildchat_sampled[:1500]
-    lmsyschat_sampled = lmsyschat_sampled[:1500]
+    #wildchat_sampled = wildchat_sampled[:1500]
+    #lmsyschat_sampled = lmsyschat_sampled[:1500]
+    all_items = [(item, 'wildchat', wildchat_embed_db) for item in wildchat_sampled] + \
+                [(item, 'lmsyschat', lmsyschat_embed_db) for item in lmsyschat_sampled]
     
     print(f"Sampled {len(wildchat_sampled)} from WildChat and {len(lmsyschat_sampled)} from LMSYS-Chat for {language}")
+
+    # Use ThreadPoolExecutor to process items in parallel
+    with ThreadPoolExecutor(max_workers=10) as executor:  # Adjust max_workers as needed
+        future_to_item = {executor.submit(process_item, item, dataset, db): (item, dataset) 
+                          for item, dataset, db in all_items}
+        for future in tqdm(as_completed(future_to_item), total=len(all_items), desc="Pre-Computing embeddings"):
+            result = future.result() 
     
     embeddings = []
     valid_samples = {'wildchat': [], 'lmsyschat': []}
@@ -114,7 +143,7 @@ def process_language(wildchat_dataset, lmsyschat_dataset, language):
     print(f"Valid samples after filtering: WildChat: {len(valid_samples['wildchat'])}, LMSYS-Chat: {len(valid_samples['lmsyschat'])}")
     
     scaler = StandardScaler()
-    umap = ParametricUMAP(n_components=2)
+    umap = ParametricUMAP(n_components=2, n_neighbors=30, metric='cosine')
     scaled_embeddings = scaler.fit_transform(embeddings)
     umap_embeddings = umap.fit_transform(scaled_embeddings)
     
@@ -150,8 +179,10 @@ def process_language(wildchat_dataset, lmsyschat_dataset, language):
             json.dump(json_data, f)
         
         subsampled_json_data = random.sample(json_data, min(1500, len(json_data)))
-        with open(f'static/{language}/{dataset_name}_embeddings.json', 'w') as f:
+        subsampled_json_path = f'static/{language}/{dataset_name}_embeddings.json'
+        with open(subsampled_json_path, 'w') as f:
             json.dump(subsampled_json_data, f)
+        gzip_file(subsampled_json_path, f'{subsampled_json_path}.gz')
 
 # Main processing loop
 print("Loading datasets...")

@@ -315,8 +315,6 @@ def search_embeddings():
     visualization_language = filters['visualization_language']
     del filters['visualization_language']
 
-    if ('language' not in filters) and (visualization_language != 'all'):
-        filters['language'] = visualization_language
     scaler = embedding_projectors[language]['scaler']
     umap = embedding_projectors[language]['umap']
     #print (filters)
@@ -339,6 +337,8 @@ def search_embeddings():
         any_filters = any_filters or any_filters_
     conversations = []
     if any_filters:
+        if (('language' not in filters) or (not filters['language'])) and (visualization_language != 'all'):
+            filters['language'] = visualization_language
         conversation_ids = set([])
         for index_name in indices_to_search:
             # Execute search query
