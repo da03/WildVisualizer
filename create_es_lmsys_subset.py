@@ -11,7 +11,6 @@ LANGUAGES = ['all', 'english', 'russian', 'chinese', 'spanish', 'german', 'frenc
 
 for language in LANGUAGES:
     print (language)
-    # Define the new index name and mappings for LMSYS-Chat-1M
     lmsys_index_name = f'lmsyschat_subset_{language}'
     lmsys_mappings = {
         "properties": {

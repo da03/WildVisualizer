@@ -343,7 +343,7 @@ def search_embeddings():
         for index_name in indices_to_search:
             # Execute search query
             search_query, any_filters_ = build_query_for_index(index_name, filters, contains, 0, 10000)
-            response = es.search(index=index_name + '_subset', body=search_query)
+            response = es.search(index=index_name + '_subset_' + visualization_language, body=search_query)
             conversations_raw = [hit['_source'] for hit in response['hits']['hits']]
 
             for conversation_raw in conversations_raw:
@@ -386,7 +386,7 @@ def search_embeddings():
     for conversation in conversations:
         dataset = conversation['dataset']
         conversation_id = conversation['conversation_id']
-        umap_database_name = f'{dataset}_umap_cache.db'
+        umap_database_name = f'umap_{visualization_language}_{dataset}_cache.db'
         embed_database_name = f'{dataset}_embeddings_cache.db'
         hit, embedding_2d = retrieve(umap_database_name, conversation_id)
         if not hit:

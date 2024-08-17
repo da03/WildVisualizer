@@ -202,6 +202,7 @@ $(document).ready(function () {
 
 
   const applyFilters = () => {
+      showLoading();
       let urlParams = new URLSearchParams(window.location.search);
       const filters = {
           contains: $('#search-input').val(),
@@ -234,7 +235,6 @@ $(document).ready(function () {
           visualization_language: visualizationLanguage
       };
 
-      showLoading();
 
       fetch('/search_embeddings', {
           method: 'POST',
@@ -324,7 +324,7 @@ $(document).ready(function () {
     $('.remove-filter').click(removeFilter);
     // Fetch data for both datasets
     //Promise.all([fetchData('/static/wildchat_embeddings.json'), fetchData('/static/lmsyschat_embeddings.json')])
-    showLoading();
+    //showLoading();
     Promise.all([fetchData('wildchat'), fetchData('lmsyschat')])
         .then(([wildchatData, lmsyschatData]) => {
             //console.log('Data loaded:', {wildchatData, lmsyschatData});
@@ -334,7 +334,6 @@ $(document).ready(function () {
             allData = [...wildchatData, ...lmsyschatData];
             updateLayer(allData);
             applyFilters();
-            hideLoading();
 
             function handleEnterKey(event) {
               if (event.key === 'Enter') {
@@ -359,6 +358,7 @@ $(document).ready(function () {
               currentViewState = {...currentViewState, zoom: 0, target: [0, 0, 0]}
               deckgl.setProps({viewState: currentViewState});
             });
+            //hideLoading();
         })
         .catch((error) => {
             //console.error('Error loading data:', error);

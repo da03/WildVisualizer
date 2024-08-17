@@ -276,6 +276,13 @@
 <script src="/static/js/data/wrangle.js"></script>
 <!--script src="static/js/views/papers.js"></script-->
 <script>
+    //function showLoading() {
+    //    document.getElementById('loading-overlay').style.display = 'block';
+    //}
+    //
+    //function hideLoading() {
+    //    document.getElementById('loading-overlay').style.display = 'none';
+    //}
   $(document).ready(function () {
     //tippy("[data-tippy-content]", { trigger: "mouseenter focus" });
     //start();
@@ -358,7 +365,11 @@
       let containsString = Array.from(urlParams.entries())
                           .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
                           .join('&');
-      window.location.search = containsString;
+      if (containsString) {
+        window.location.search = containsString;
+      } else {
+        window.location.href = window.location.pathname;
+      }
     }
 
     function handleEnterKey(event) {
@@ -412,17 +423,28 @@
       let containsString = Array.from(urlParams.entries())
                           .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
                           .join('&');
-      window.location.search = containsString;
+      //window.location.search = containsString;
+      if (containsString) {
+        window.location.search = containsString;
+      } else {
+        window.location.href = window.location.pathname;
+      }
     });
 
     $('.typeahead_all_clear').click(function() {
       window.location.href = '/';
     });
+    //hideLoading();
   });
 </script>
 
 {% endblock %}
 
 {% block footer %}
-
+<!--div id="loading-overlay" style="display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+        <div style="color: white; font-size: 24px; font-weight: bold; margin-bottom: 20px;">Loading...</div>
+        <div class="spinner"></div>
+    </div>
+</div-->
 {% endblock %}

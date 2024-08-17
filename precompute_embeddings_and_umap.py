@@ -101,9 +101,9 @@ def process_language(wildchat_dataset, lmsyschat_dataset, language):
     lmsyschat_embed_db = 'lmsyschat_embeddings_cache.db'
     
     random.seed(1234)
-    wildchat_sampled = conditional_reservoir_sample(wildchat_dataset, 50000, language if language != 'all' else None)
+    wildchat_sampled = conditional_reservoir_sample(wildchat_dataset, 15000, language if language != 'all' else None)
     random.seed(1234)
-    lmsyschat_sampled = conditional_reservoir_sample(lmsyschat_dataset, 50000, language if language != 'all' else None)
+    lmsyschat_sampled = conditional_reservoir_sample(lmsyschat_dataset, 15000, language if language != 'all' else None)
     random.seed(1234)
     #wildchat_sampled = wildchat_sampled[:1500]
     #lmsyschat_sampled = lmsyschat_sampled[:1500]
