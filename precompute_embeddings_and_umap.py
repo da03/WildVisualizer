@@ -101,9 +101,9 @@ def process_language(wildchat_dataset, lmsyschat_dataset, language):
     lmsyschat_embed_db = 'lmsyschat_embeddings_cache.db'
     
     random.seed(1234)
-    wildchat_sampled = conditional_reservoir_sample(wildchat_dataset, 15000, language if language != 'all' else None)
+    wildchat_sampled = conditional_reservoir_sample(wildchat_dataset, 50000, language if language != 'all' else None)
     random.seed(1234)
-    lmsyschat_sampled = conditional_reservoir_sample(lmsyschat_dataset, 15000, language if language != 'all' else None)
+    lmsyschat_sampled = conditional_reservoir_sample(lmsyschat_dataset, 50000, language if language != 'all' else None)
     random.seed(1234)
     #wildchat_sampled = wildchat_sampled[:1500]
     #lmsyschat_sampled = lmsyschat_sampled[:1500]
@@ -113,7 +113,7 @@ def process_language(wildchat_dataset, lmsyschat_dataset, language):
     print(f"Sampled {len(wildchat_sampled)} from WildChat and {len(lmsyschat_sampled)} from LMSYS-Chat for {language}")
 
     # Use ThreadPoolExecutor to process items in parallel
-    with ThreadPoolExecutor(max_workers=10) as executor:  # Adjust max_workers as needed
+    with ThreadPoolExecutor(max_workers=20) as executor:  # Adjust max_workers as needed
         future_to_item = {executor.submit(process_item, item, dataset, db): (item, dataset) 
                           for item, dataset, db in all_items}
         for future in tqdm(as_completed(future_to_item), total=len(all_items), desc="Pre-Computing embeddings"):
@@ -141,15 +141,26 @@ def process_language(wildchat_dataset, lmsyschat_dataset, language):
         valid_samples['lmsyschat'].append(item)
     
     print(f"Valid samples after filtering: WildChat: {len(valid_samples['wildchat'])}, LMSYS-Chat: {len(valid_samples['lmsyschat'])}")
-    
-    scaler = StandardScaler()
+   
+    import pdb; pdb.set_trace()
+    #scaler = StandardScaler()
     umap = ParametricUMAP(n_components=2, n_neighbors=30, metric='cosine')
-    scaled_embeddings = scaler.fit_transform(embeddings)
-    umap_embeddings = umap.fit_transform(scaled_embeddings)
+    #scaled_embeddings = scaler.fit_transform(embeddings)
+    #umap_embeddings = umap.fit_transform(scaled_embeddings)
+    umap_embeddings = umap.fit_transform(embeddings)
     
     os.makedirs(f'umap_model/{language}', exist_ok=True)
-    joblib.dump(scaler, f'umap_model/{language}/scaler.pkl')
+    #joblib.dump(scaler, f'umap_model/{language}/scaler.pkl')
+    if hasattr(umap, "_raw_data"):
+        del umap._raw_data
+    if hasattr(umap, "knn_search_index") and hasattr(umap.knn_search_index, "_raw_data"):
+        del umap.knn_search_index._raw_data
     umap.save(f'umap_model/{language}')
+
+    for db_path in [f'umap_{language}_wildchat_cache.db', f'umap_{language}_lmsyschat_cache.db']:
+        if os.path.exists(db_path):
+            print (f'Removing {db_path}')
+            os.remove(db_path)
     
     wildchat_umap_db = create_database(f'umap_{language}_wildchat_cache.db')
     lmsyschat_umap_db = create_database(f'umap_{language}_lmsyschat_cache.db')

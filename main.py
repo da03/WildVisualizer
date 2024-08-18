@@ -109,13 +109,18 @@ tokenizer = tiktoken.get_encoding('cl100k_base')
 
 embedding_projectors = {}
 for folder in glob.glob(os.path.join('umap_model', '*')):
-   scaler_path = os.path.join(folder, 'scaler.pkl')
+   #scaler_path = os.path.join(folder, 'scaler.pkl')
    umap_path = folder
-   if os.path.exists(scaler_path):
+   #if os.path.exists(scaler_path):
+   if os.path.exists(umap_path):
        language = os.path.basename(folder)
-       scaler = joblib.load(scaler_path)
-       umap = load_ParametricUMAP(umap_path)
-       embedding_projectors[language] = {'scaler': scaler, 'umap': umap}
+       #scaler = joblib.load(scaler_path)
+       try:
+           umap = load_ParametricUMAP(umap_path)
+           #embedding_projectors[language] = {'scaler': scaler, 'umap': umap}
+           embedding_projectors[language] = umap
+       except Exception as e:
+           print (e)
 print (embedding_projectors.keys())
 
 def create_database(db_name):
@@ -315,8 +320,9 @@ def search_embeddings():
     visualization_language = filters['visualization_language']
     del filters['visualization_language']
 
-    scaler = embedding_projectors[language]['scaler']
-    umap = embedding_projectors[language]['umap']
+    #scaler = embedding_projectors[language]['scaler']
+    #umap = embedding_projectors[language]['umap']
+    umap = embedding_projectors[language]
     #print (filters)
     disabled_datasets = []
     for dataset in indices:
@@ -396,7 +402,8 @@ def search_embeddings():
                 continue
             #import pdb; pdb.set_trace()
             embedding = get_embedding_with_cache(embed_database_name, conversation_id, conversation_text, model='text-embedding-3-small')
-            embedding_2d = umap.transform(scaler.transform(np.array([embedding])))[0]
+            #embedding_2d = umap.transform(scaler.transform(np.array([embedding])))[0]
+            embedding_2d = umap.transform(np.array([embedding]))[0]
             insert_or_update(umap_database_name, conversation_id, '', [float(embedding_2d[0]), float(embedding_2d[1])])
         else:
             print ('hit')
