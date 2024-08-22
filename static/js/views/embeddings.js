@@ -1,4 +1,99 @@
+function isMobileDevice() {
+    //return 1==1;
+    return (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1);
+}
 $(document).ready(function () {
+    ['zoom-out', 'zoom-reset', 'zoom-in'].forEach(id => {
+        const button = document.getElementById(id);
+        button.addEventListener("touchstart", function(){ 
+            this.classList.remove('mobileHoverFix');
+        });
+        button.addEventListener("touchend", function(){
+            const btn = this;
+            setTimeout(function() {
+                btn.classList.add('mobileHoverFix');
+            }, 150); // 150 milliseconds delay
+        });
+    });
+
+    if (isMobileDevice()) {
+      document.getElementById('mobile-instructions').style.display = 'block';
+    } else {
+      document.getElementById('desktop-instructions').style.display = 'block';
+    }
+    function showMobileTooltip(object, x, y) {
+        const tooltipEl = document.getElementById('tooltip');
+        if (object && tooltipEl) {
+            tooltipDiv.style.width = '44%';
+            tooltipDiv.style.maxHeight = '60vh';
+            tooltipDiv.style.overflowY = 'auto';
+            tooltipDiv.style.overflowY = 'auto';
+            tooltipDiv.style.zIndex = '1500';
+            //tooltipDiv.style.display = 'flex';
+            tooltipDiv.style.flexDirection = 'column';
+            const tooltipContent = `
+                <div><strong>${escapeHTML(object.dataset)}</strong></div>
+                <div class="chat-container">
+                    <div class="messages mine" style="max-height: 40vh; overflow-y: auto;">
+                        <div class="message last">${escapeHTML(object.c)}</div>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
+                <button class="btn btn-outline-secondary btn-sm close-tooltip" onclick="event.stopPropagation(); this.closest('#tooltip').style.display='none';">
+                    <i class="fas fa-times"></i>
+                </button>
+                <a target="_blank" href="/conversation/${object.dataset}/${object.i}" class="btn btn-outline-secondary btn-sm" style="display: inline-block;">View Full</a>
+            </div>
+                </div>
+            `;
+            tooltipEl.innerHTML = tooltipContent;
+            tooltipEl.style.display = 'flex';
+            //tooltipEl.style.left = `${x}px`;
+            //tooltipEl.style.top = `${y}px`;
+            // Close tooltip when clicking outside
+            //document.addEventListener('click', closeMobileTooltip);
+        } else if (tooltipEl) {
+            tooltipEl.style.display = 'none';
+        }
+    
+    }
+    
+    function closeMobileTooltip(event) {
+        const tooltipEl = document.getElementById('tooltip');
+        if (tooltipEl && !tooltipEl.contains(event.target)) {
+            tooltipEl.style.display = 'none';
+            //document.removeEventListener('click', closeMobileTooltip);
+        }
+    }
+
+    function updateTooltip(object, x, y) {
+        const tooltipEl = document.getElementById('tooltip');
+        if (object && tooltipEl) {
+            tooltipEl.style.pointerEvents = 'none';
+            const tooltipContent = `
+              <div><strong>${escapeHTML(object.dataset)}</strong></div>
+              <div class="chat-container">
+                <div class="messages mine">
+                  <div class="message last">${escapeHTML(object.c)}</div>
+                </div>
+              </div>`;
+            tooltipEl.innerHTML = tooltipContent;
+            //tooltipEl.style.top = `${y}px`;
+            //tooltipEl.style.left = `${x}px`;
+            tooltipEl.style.display = 'block';
+        } else if (tooltipEl) {
+            tooltipEl.style.display = 'none';
+        }
+    }
+
+    function escapeHTML(unsafe) {
+    return unsafe
+         .replace(/&/g, "&amp;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#039;");
+    }
     function showLoading() {
         document.getElementById('loading-overlay').style.display = 'block';
     }
@@ -77,10 +172,15 @@ $(document).ready(function () {
         const iqrY = q3Y - q1Y;
 
         // Use 1.5 * IQR for clamping (a common statistical practice)
-        const clampLowerX = medianX - 1.5 * iqrX;
-        const clampUpperX = medianX + 1.5 * iqrX;
-        const clampLowerY = medianY - 1.5 * iqrY;
-        const clampUpperY = medianY + 1.5 * iqrY;
+        //const clampLowerX = medianX - 1.5 * iqrX;
+        //const clampUpperX = medianX + 1.5 * iqrX;
+        //const clampLowerY = medianY - 1.5 * iqrY;
+        //const clampUpperY = medianY + 1.5 * iqrY;
+
+        const clampLowerX = medianX - 1.75 * iqrX;
+        const clampUpperX = medianX + 1.75 * iqrX;
+        const clampLowerY = medianY - 1.75 * iqrY;
+        const clampUpperY = medianY + 1.75 * iqrY;
 
         const plot_size = () => {
             const cont = document.getElementById("scatter-plot");
@@ -125,7 +225,7 @@ $(document).ready(function () {
             radiusMinPixels: 1,
             radiusMaxPixels: 6,
             lineWidthUnits: 'pixels',
-            lineWidthMinPixels: 1,
+            lineWidthMinPixels: 0,
             lineWidthMaxPixels: 2,
             //getPosition: (d) => d.position,
             getPosition: (d) => {
@@ -133,6 +233,7 @@ $(document).ready(function () {
                 return [...d.position, z];
             },
             getRadius: 3,
+            getLineWidth: 1,
             getFillColor: (d) => {
                 if (highlightIds.includes(String(d.i))) {
                   return [255, 0, 0]; // Red for highlighted
@@ -141,27 +242,22 @@ $(document).ready(function () {
             },
             getLineColor: [0, 0, 0],
             onHover: ({object, x, y}) => {
-                const tooltipEl = document.getElementById('tooltip');
-                if (object && tooltipEl) {
-                    const tooltipContent = `
-                      <div><strong>${object.dataset}</strong></div>
-                      <div class="chat-container">
-                        <div class="messages mine">
-                          <div class="message last">${object.c}</div>
-                        </div>
-                      </div>`;
-                    tooltipEl.innerHTML = tooltipContent;
-                    //tooltipEl.style.top = `${y}px`;
-                    //tooltipEl.style.left = `${x}px`;
-                    tooltipEl.style.display = 'block';
-                } else if (tooltipEl) {
-                    tooltipEl.style.display = 'none';
-                }
+                if (!isMobileDevice()) {
+                    updateTooltip(object, x, y);
+                } //else {
+                    //showMobileTooltip(object, x, y);
+                //}
             },
-            onClick: ({object}) => {
+            onClick: ({object, x, y}) => {
                 if (object) {
-                    //console.log('Clicked on:', object);
-                    window.open(`/conversation/${object.dataset}/${object.i}`, '_blank');
+                    if (isMobileDevice()) {
+                        showMobileTooltip(object, x, y);
+                        //updateTooltip(object, x, y);
+                    } else {
+                        window.open(`/conversation/${object.dataset}/${object.i}`, '_blank');
+                    }
+                } else {
+                    closeMobileTooltip();
                 }
             },
         });
@@ -272,7 +368,7 @@ $(document).ready(function () {
         hideLoading();
       })
       .catch((error) => {
-        //console.error('Error fetching filtered embeddings:', error);
+        console.error('Error fetching filtered embeddings:', error);
         hideLoading();
       });
     };
@@ -361,7 +457,7 @@ $(document).ready(function () {
             //hideLoading();
         })
         .catch((error) => {
-            //console.error('Error loading data:', error);
+            console.error('Error loading data:', error);
             hideLoading();
         });
     // Add tooltip div to HTML
@@ -378,7 +474,6 @@ $(document).ready(function () {
     tooltipDiv.style.padding = '5px';
     tooltipDiv.style.border = '1px solid #ccc';
     tooltipDiv.style.borderRadius = '3px';
-    tooltipDiv.style.pointerEvents = 'none';
     tooltipDiv.style.overflowY = 'auto';
     tooltipDiv.style.display = 'none';
     document.body.appendChild(tooltipDiv);

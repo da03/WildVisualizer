@@ -13,13 +13,14 @@ def get_language_list():
     for item in os.listdir(static_dir):
         folder_path = os.path.join(static_dir, item)
         if os.path.isdir(folder_path):
-            if os.path.exists(os.path.join(folder_path, 'wildchat_embeddings.json')) and 'debug' not in item:
+            if os.path.exists(os.path.join(folder_path, 'wildchat_embeddings.json')) and 'debug' in item:
                 languages.append(item)
     
     return languages
 
 # Generate the LANGUAGES list
 LANGUAGES = get_language_list()
+LANGUAGES = [ 'debugs01', 'debugs02', 'debugs05']
 print (LANGUAGES)
 
 for language in LANGUAGES:

@@ -2,6 +2,7 @@
 import argparse
 import csv
 import glob
+import keras
 import json
 import random
 import os
@@ -10,7 +11,7 @@ import sqlite3
 from openai import OpenAI
 import numpy as np
 import joblib
-from umap.parametric_umap import load_ParametricUMAP
+#from umap.parametric_umap import load_ParametricUMAP
 import tiktoken
 #from sklearn.decomposition import PCA
 from umap.parametric_umap import ParametricUMAP
@@ -116,9 +117,10 @@ for folder in glob.glob(os.path.join('umap_model', '*')):
        language = os.path.basename(folder)
        #scaler = joblib.load(scaler_path)
        try:
-           umap = load_ParametricUMAP(umap_path)
+           umap_encoder = keras.models.load_model(os.path.join(umap_path, "encoder.keras"))
+           #umap = load_ParametricUMAP(umap_path)
            #embedding_projectors[language] = {'scaler': scaler, 'umap': umap}
-           embedding_projectors[language] = umap
+           embedding_projectors[language] = umap_encoder
        except Exception as e:
            print (e)
 print (embedding_projectors.keys())
@@ -157,7 +159,8 @@ def retrieve(db_name, key):
 
 def get_embedding_with_cache(database_name, conversation_id, prompt, model='text-embedding-3-small'):
     key = conversation_id
-    hit, embedding = retrieve(database_name, key)
+    #hit, embedding = retrieve(database_name, key)
+    hit = False
     if not hit:
         # Tokenize and truncate if necessary
         tokens = tokenizer.encode(prompt)
@@ -165,7 +168,7 @@ def get_embedding_with_cache(database_name, conversation_id, prompt, model='text
             tokens = tokens[:8192]
             prompt = tokenizer.decode(tokens)
         embedding = client.embeddings.create(input=[prompt], model=model).data[0].embedding
-        insert_or_update('embeddings_cache.db', key, json.dumps(prompt), embedding)
+        #insert_or_update('embeddings_cache.db', key, json.dumps(prompt), embedding)
     else:
         print('Cache hit for embedding')
     return embedding
@@ -322,7 +325,7 @@ def search_embeddings():
 
     #scaler = embedding_projectors[language]['scaler']
     #umap = embedding_projectors[language]['umap']
-    umap = embedding_projectors[language]
+    umap_encoder = embedding_projectors[language]
     #print (filters)
     disabled_datasets = []
     for dataset in indices:
@@ -394,7 +397,9 @@ def search_embeddings():
         conversation_id = conversation['conversation_id']
         umap_database_name = f'umap_{visualization_language}_{dataset}_cache.db'
         embed_database_name = f'{dataset}_embeddings_cache.db'
+        create_database(umap_database_name)
         hit, embedding_2d = retrieve(umap_database_name, conversation_id)
+        #hit = False
         if not hit:
             conversation_text = conversation['conversation'][0]['content']
             conversation_text = conversation_text.strip()
@@ -403,10 +408,12 @@ def search_embeddings():
             #import pdb; pdb.set_trace()
             embedding = get_embedding_with_cache(embed_database_name, conversation_id, conversation_text, model='text-embedding-3-small')
             #embedding_2d = umap.transform(scaler.transform(np.array([embedding])))[0]
-            embedding_2d = umap.transform(np.array([embedding]))[0]
+            #embedding_2d = umap.transform(np.array([embedding]))[0]
+            embedding_2d = umap_encoder(np.array([embedding])).numpy()[0]
             insert_or_update(umap_database_name, conversation_id, '', [float(embedding_2d[0]), float(embedding_2d[1])])
         else:
             print ('hit')
+            print (embedding_2d)
         conversation_embeddings[str(conversation_id)] = {'i': conversation_id, 'e': [round(float(embedding_2d[0]), 4), round(float(embedding_2d[1]), 4)], 'c': conversation['conversation'][0]['content'], 'd': dataset}
     return jsonify(conversation_embeddings)
 

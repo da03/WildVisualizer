@@ -24,7 +24,8 @@ def main():
     lmsys_languages = get_language_distribution(lmsys_dataset)
     
     # Combine the counts using min function for each language
-    combined_min_counts = pd.concat([wildchat_languages, lmsys_languages], axis=1, keys=['WildChat', 'LMSYS']).min(axis=1)
+    #combined_min_counts = pd.concat([wildchat_languages, lmsys_languages], axis=1, keys=['WildChat', 'LMSYS']).min(axis=1)
+    combined_min_counts = pd.concat([wildchat_languages, lmsys_languages], axis=1, keys=['WildChat', 'LMSYS']).sum(axis=1)
     
     # Sort the counts from highest to lowest
     sorted_min_counts = combined_min_counts.sort_values(ascending=False)

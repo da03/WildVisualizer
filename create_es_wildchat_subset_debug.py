@@ -9,23 +9,8 @@ dataset = load_dataset('allenai/WildChat-1M-Full')
 # Initialize Elasticsearch client
 #es = Elasticsearch('http://localhost:9200')
 es = Elasticsearch('https://localhost:9200', basic_auth=('elastic', os.getenv('ES_PASSWD')), ssl_assert_fingerprint=os.getenv('ES_FINGERPRINT'))
-#LANGUAGES = ['all', 'english', 'russian', 'chinese', 'spanish', 'german', 'french', 'portuguese', 'italian', 'japanese', 'korean']
-def get_language_list():
-    languages = []
-    static_dir = 'static'
-    
-    for item in os.listdir(static_dir):
-        folder_path = os.path.join(static_dir, item)
-        if os.path.isdir(folder_path):
-            if os.path.exists(os.path.join(folder_path, 'wildchat_embeddings.json')) and 'debug' not in item:
-                languages.append(item)
-    
-    return languages
-
-# Generate the LANGUAGES list
-LANGUAGES = get_language_list()
-LANGUAGES = [ 'korean', 'portuguese', 'italian', 'french', 'turkish', 'german']
-print (LANGUAGES)
+LANGUAGES = ['all', 'english', 'russian', 'chinese', 'spanish', 'german', 'french', 'portuguese', 'italian', 'japanese', 'korean']
+LANGUAGES = ['english', 'all']
 
 for language in LANGUAGES:
     print (language)

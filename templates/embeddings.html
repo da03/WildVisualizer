@@ -21,7 +21,7 @@
     <style>
       #scatter-plot-area {
         width: 900px;
-        height: 440px;
+        height: 500px;
         margin: 0;
       }
     </style>
@@ -49,15 +49,19 @@
     <div class="dropdown-menu">
       <a class="dropdown-item {% if visualization_language == 'all' %}active{% endif %}" href="/embeddings">All Languages</a>
       <a class="dropdown-item {% if visualization_language == 'english' %}active{% endif %}" href="/embeddings/english">English</a>
-      <a class="dropdown-item {% if visualization_language == 'russian' %}active{% endif %}" href="/embeddings/russian">Russian</a>
       <a class="dropdown-item {% if visualization_language == 'chinese' %}active{% endif %}" href="/embeddings/chinese">Chinese</a>
+      <a class="dropdown-item {% if visualization_language == 'russian' %}active{% endif %}" href="/embeddings/russian">Russian</a>
       <a class="dropdown-item {% if visualization_language == 'spanish' %}active{% endif %}" href="/embeddings/spanish">Spanish</a>
-      <a class="dropdown-item {% if visualization_language == 'german' %}active{% endif %}" href="/embeddings/german">German</a>
       <a class="dropdown-item {% if visualization_language == 'french' %}active{% endif %}" href="/embeddings/french">French</a>
       <a class="dropdown-item {% if visualization_language == 'portuguese' %}active{% endif %}" href="/embeddings/portuguese">Portuguese</a>
+      <a class="dropdown-item {% if visualization_language == 'german' %}active{% endif %}" href="/embeddings/german">German</a>
       <a class="dropdown-item {% if visualization_language == 'italian' %}active{% endif %}" href="/embeddings/italian">Italian</a>
+      <a class="dropdown-item {% if visualization_language == 'turkish' %}active{% endif %}" href="/embeddings/turkish">Turkish</a>
+      <a class="dropdown-item {% if visualization_language == 'arabic' %}active{% endif %}" href="/embeddings/arabic">Arabic</a>
       <a class="dropdown-item {% if visualization_language == 'japanese' %}active{% endif %}" href="/embeddings/japanese">Japanese</a>
       <a class="dropdown-item {% if visualization_language == 'korean' %}active{% endif %}" href="/embeddings/korean">Korean</a>
+      <a class="dropdown-item {% if visualization_language == 'polish' %}active{% endif %}" href="/embeddings/polish">Polish</a>
+      <a class="dropdown-item {% if visualization_language == 'vietnamese' %}active{% endif %}" href="/embeddings/vietnamese">Vietnamese</a>
     </div>
   </li>
 </ul>
@@ -99,18 +103,19 @@
             <input type="text" id="filter-language" class="form-control filter-input" placeholder="Language" value="{{ filters.language }}" list="language-options">
             <datalist id="language-options">
                 <option value="English">
-                <option value="Russian">
                 <option value="Chinese">
+                <option value="Russian">
                 <option value="Spanish">
-                <option value="German">
                 <option value="French">
                 <option value="Portuguese">
+                <option value="German">
                 <option value="Italian">
+                <option value="Turkish">
+                <option value="Arabic">
                 <option value="Japanese">
                 <option value="Korean">
                 <option value="Polish">
-                <option value="Arabic">
-                <option value="Turkish">
+                <option value="Vietnamese">
             </datalist>
             <div class="input-group-append">
                 <button class="btn btn-outline-secondary add-filter" type="button" data-filter="language">+</button>
@@ -235,12 +240,12 @@
     <div class="card" style="margin-right: -40px;">
       <div class="card-header row" style="margin-left: 0; margin-right: 0;" id="tab-embedding">
         <div id="scatter-plot-area" style="vertical-align: top;" class="col-md-10 col-sm-12">
-          <div id="scatter-plot" style=" height: 100%; width: 100%; margin: 0; padding: 0; overflow: hidden; position: relative;" onmouseleave="hideTooltip()">
+          <div id="scatter-plot" style=" height: 100%; width: 100%; margin: 0; padding: 0; overflow: hidden; position: relative;" onmouseleave="maybeHideTooltip()">
           </div>
           <div id="zoom-controls">
-            <button id="zoom-out" class="btn btn-secondary btn-sm" style="color: #6c757d; width: 26px; height: 26px; display: inline-flex; justify-content: center; align-items: center; padding: 0;" onmouseover="this.style.color='#fff';" onmouseout="this.style.color='#6c757d';">-</button>
-            <button id="zoom-reset" class="btn btn-secondary btn-sm" style="color: #6c757d; width: 26px; height: 26px; display: inline-flex; justify-content: center; align-items: center; padding: 0;" onmouseover="this.style.color='#fff';" onmouseout="this.style.color='#6c757d';"><i class="fas fa-sync"></i></button>
-            <button id="zoom-in" class="btn btn-secondary btn-sm" style="color: #6c757d; width: 26px; height: 26px; display: inline-flex; justify-content: center; align-items: center; padding: 0;" onmouseover="this.style.color='#fff';" onmouseout="this.style.color='#6c757d';">+</button>
+            <button id="zoom-out" class="btn btn-secondary btn-sm btn-zoom" style="width: 26px; height: 26px; display: inline-flex; justify-content: center; align-items: center; padding: 0;">-</button>
+            <button id="zoom-reset" class="btn btn-secondary btn-sm btn-zoom" style="width: 26px; height: 26px; display: inline-flex; justify-content: center; align-items: center; padding: 0;"><i class="fas fa-sync"></i></button>
+            <button id="zoom-in" class="btn btn-secondary btn-sm btn-zoom" style="width: 26px; height: 26px; display: inline-flex; justify-content: center; align-items: center; padding: 0;">+</button>
           </div>
         <!--div id="zoom-controls">
           <button id="zoom-out" class="btn btn-secondary btn-sm" style="color: #6c757d;" onmouseover="this.style.color='#fff';" onmouseout="this.style.color='#6c757d';">-</button>
@@ -261,10 +266,18 @@
               <p>
                 Each dot is a conversation (green: wildchat, blue: lmsyschat).
               </p>
-              <p><b>Hovering</b> over a dot shows the first user turn.</p>
-              <p>
-                <b>Clicking</b> on a dot takes you to the full conversation.
-              </p>
+              <div id="desktop-instructions" style="display: none;">
+                <p><b>Hovering</b> over a dot shows the first user turn.</p>
+                <p>
+                  <b>Clicking</b> on a dot takes you to the full conversation.
+                </p>
+              </div>
+              <div id="mobile-instructions" style="display: none;">
+                <p><b>Tapping</b> on a dot shows the first user turn.</p>
+                <p>
+                  Use the <b>View Full</b> button to see the entire conversation.
+                </p>
+              </div>
               <p>
                 <b>Searching</b> for conversations highlights matches in red.
               </p>
@@ -292,6 +305,11 @@
 <script src="/static/js/views/embeddings.js"></script>
 
 <script>
+    function maybeHideTooltip() {
+        if (!isMobileDevice()) {
+            hideTooltip()
+        }
+    }
     function hideTooltip() {
         const tooltipEl = document.getElementById('tooltip');
         if (tooltipEl) {
