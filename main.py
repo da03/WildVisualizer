@@ -159,19 +159,21 @@ def retrieve(db_name, key):
 
 def get_embedding_with_cache(database_name, conversation_id, prompt, model='text-embedding-3-small'):
     key = conversation_id
-    #hit, embedding = retrieve(database_name, key)
-    hit = False
+    hit, embedding = retrieve(database_name, key)
     if not hit:
-        # Tokenize and truncate if necessary
-        tokens = tokenizer.encode(prompt)
-        if len(tokens) > 8192:
-            tokens = tokens[:8192]
+        tokens = tokenizer.encode(prompt, disallowed_special=())
+        #if len(tokens) > 8192:
+        #    tokens = tokens[:8192]
+        #    prompt = tokenizer.decode(tokens)
+        if len(tokens) > 8100:
+            tokens = tokens[:8100]
             prompt = tokenizer.decode(tokens)
         embedding = client.embeddings.create(input=[prompt], model=model).data[0].embedding
-        #insert_or_update('embeddings_cache.db', key, json.dumps(prompt), embedding)
-    else:
-        print('Cache hit for embedding')
+        insert_or_update(database_name, key, json.dumps(prompt), embedding)
+    #else:
+    #    print('Cache hit for embedding')
     return embedding
+
 
 def main(site_data_path):
     global site_data, extra_files
@@ -397,23 +399,16 @@ def search_embeddings():
         conversation_id = conversation['conversation_id']
         umap_database_name = f'umap_{visualization_language}_{dataset}_cache.db'
         embed_database_name = f'{dataset}_embeddings_cache.db'
-        create_database(umap_database_name)
+        #create_database(umap_database_name)
         hit, embedding_2d = retrieve(umap_database_name, conversation_id)
-        #hit = False
         if not hit:
             conversation_text = conversation['conversation'][0]['content']
             conversation_text = conversation_text.strip()
             if not conversation_text:
                 continue
-            #import pdb; pdb.set_trace()
             embedding = get_embedding_with_cache(embed_database_name, conversation_id, conversation_text, model='text-embedding-3-small')
-            #embedding_2d = umap.transform(scaler.transform(np.array([embedding])))[0]
-            #embedding_2d = umap.transform(np.array([embedding]))[0]
             embedding_2d = umap_encoder(np.array([embedding])).numpy()[0]
             insert_or_update(umap_database_name, conversation_id, '', [float(embedding_2d[0]), float(embedding_2d[1])])
-        else:
-            print ('hit')
-            print (embedding_2d)
         conversation_embeddings[str(conversation_id)] = {'i': conversation_id, 'e': [round(float(embedding_2d[0]), 4), round(float(embedding_2d[1]), 4)], 'c': conversation['conversation'][0]['content'], 'd': dataset}
     return jsonify(conversation_embeddings)
 

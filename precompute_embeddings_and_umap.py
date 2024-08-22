@@ -116,7 +116,7 @@ def process_language(wildchat_sampled, lmsyschat_sampled, language):
     print(f"Sampled {len(wildchat_sampled)} from WildChat and {len(lmsyschat_sampled)} from LMSYS-Chat for {language}")
 
     # Use ThreadPoolExecutor to process items in parallel
-    with ThreadPoolExecutor(max_workers=20) as executor:  # Adjust max_workers as needed
+    with ThreadPoolExecutor(max_workers=5) as executor:  # Adjust max_workers as needed
         future_to_item = {executor.submit(process_item, item, dataset, db): (item, dataset) 
                           for item, dataset, db in all_items}
         for future in tqdm(as_completed(future_to_item), total=len(all_items), desc="Pre-Computing embeddings"):
@@ -163,6 +163,11 @@ def process_language(wildchat_sampled, lmsyschat_sampled, language):
     if hasattr(umap, "knn_search_index") and hasattr(umap.knn_search_index, "_raw_data"):
         del umap.knn_search_index._raw_data
     umap.save(f'umap_model/{language}')
+
+    for model_path in [f'umap_model/{language}/model.pkl', f'umap_model/{language}/parametric_model.keras', f'umap_model/{language}/scaler.pkl']:
+        if os.path.exists(model_path):
+            print (f'Removing {model_path}')
+            os.remove(model_path)
 
     for db_path in [f'umap_{language}_wildchat_cache.db', f'umap_{language}_lmsyschat_cache.db']:
         if os.path.exists(db_path):
