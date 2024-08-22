@@ -1,0 +1,102 @@
+.chat {
+  width: 300px;
+  border: solid 1px #EEE;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+}
+
+.messages {
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  white-space: pre-wrap;
+}
+
+.message {
+  border-radius: 20px;
+  padding: 8px 15px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  display: inline-block;
+}
+
+.yours {
+  align-items: flex-start;
+}
+
+.yours .message {
+  margin-right: 25%;
+  background-color: #EEE;
+  position: relative;
+}
+.yours .message.last {
+  width: 75%;
+}
+
+
+.yours .message.last:before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  bottom: 0;
+  left: -7px;
+  height: 20px;
+  width: 20px;
+  background: #EEE;
+  border-bottom-right-radius: 15px;
+}
+.yours .message.last:after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  bottom: 0;
+  left: -10px;
+  width: 10px;
+  height: 20px;
+  background: rgba(236, 241, 246, 1);
+  border-bottom-right-radius: 10px;
+}
+
+.mine {
+  align-items: flex-end;
+}
+
+.mine .message {
+  color: white;
+  margin-left: 25%;
+  background: rgb(0, 120, 254);
+  position: relative;
+}
+.mine .message.last {
+  width: 75%;
+}
+
+.mine .message.last:before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  bottom: 0;
+  right: -8px;
+  height: 20px;
+  width: 20px;
+  background: rgb(0, 120, 254);
+  border-bottom-left-radius: 15px;
+}
+
+.mine .message.last:after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  bottom: 0;
+  right: -10px;
+  width: 10px;
+  height: 20px;
+  background: rgba(236, 241, 246, 1);
+  border-bottom-left-radius: 10px;
+}
+
+select:invalid, select option[value=""] {
+  color: #6c757d;
+}

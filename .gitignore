@@ -9,6 +9,11 @@ __pycache__/
 *.db
 *.bak
 *.swp
+*.sw*
+*.gz
+*.json
+*.backup
+*.pkl
 
 # Distribution / packaging
 .Python
