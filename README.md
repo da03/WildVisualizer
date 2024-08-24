@@ -2,6 +2,15 @@
 
 WildVisualizer is a tool for visualizing and exploring conversation datasets using Elasticsearch and UMAP embeddings.
 
+
+## Features
+
+- Interactive search and filtering capabilities
+- Language-specific 2D visualizations of conversation embeddings
+- Responsive design for both desktop and mobile devices
+- Efficient loading and rendering of large datasets
+
+
 ## Dependencies
 
 - Elasticsearch
@@ -21,6 +30,7 @@ You can install most Python dependencies using:
 ```
 pip install flask gunicorn numpy scikit-learn datasets umap-learn openai tqdm tiktoken elasticsearch tensorflow keras
 ```
+
 
 ## Setup and Deployment
 
@@ -56,6 +66,7 @@ python create_es_lmsys_subset.py
 
 This doesn't limit users to searching within these subsets in the embedding visualization page. If not enough matches are found, the search falls back to the full index.
 
+
 ### Deploy Web Server
 
 Finally, deploy the Flask-based web server:
@@ -64,12 +75,20 @@ Finally, deploy the Flask-based web server:
 gunicorn -w 4 -b 127.0.0.1:9972 main:app
 ```
 
-## Features
 
-- Interactive search and filtering capabilities
-- Language-specific 2D visualizations of conversation embeddings
-- Responsive design for both desktop and mobile devices
-- Efficient loading and rendering of large datasets
+## Important Files and Directories
+
+- `main.py`: The main Flask application file
+- `templates/`:
+  - `index.html`: Template for the main search page
+  - `embeddings.html`: Template for the 2D embedding visualization page
+- `static/`:
+  - `js/views/embeddings.js`: JavaScript file for the embedding visualization
+- `create_es_wildchat.py`: Script to build Elasticsearch index for WildChat dataset
+- `create_es_lmsys.py`: Script to build Elasticsearch index for LMSYSChat dataset
+- `precompute_embeddings_and_umap.py`: Script to compute embeddings and train UMAP models
+- `create_es_wildchat_subset.py`: Script to build Elasticsearch index for the visualization subset of WildChat
+- `create_es_lmsys_subset.py`: Script to build Elasticsearch index for the visualization subset of LMSYSChat
 
 
 ## Acknowledgements
