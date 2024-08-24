@@ -2,6 +2,9 @@ function isMobileDevice() {
     //return 1==1;
     return (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1);
 }
+let deckgl = null;
+let layer = null;
+let highlightedPointId = null;
 $(document).ready(function () {
     ['zoom-out', 'zoom-reset', 'zoom-in'].forEach(id => {
         const button = document.getElementById(id);
@@ -24,13 +27,13 @@ $(document).ready(function () {
     function showMobileTooltip(object, x, y) {
         const tooltipEl = document.getElementById('tooltip');
         if (object && tooltipEl) {
-            tooltipDiv.style.width = '44%';
-            tooltipDiv.style.maxHeight = '60vh';
-            tooltipDiv.style.overflowY = 'auto';
-            tooltipDiv.style.overflowY = 'auto';
-            tooltipDiv.style.zIndex = '1500';
-            //tooltipDiv.style.display = 'flex';
-            tooltipDiv.style.flexDirection = 'column';
+            tooltipEl.style.width = '44%';
+            //tooltipEl.style.maxHeight = '60vh';
+            tooltipEl.style.overflowY = 'auto';
+            tooltipEl.style.overflowY = 'auto';
+            tooltipEl.style.zIndex = '1500';
+            //tooltipEl.style.display = 'flex';
+            tooltipEl.style.flexDirection = 'column';
             const tooltipContent = `
                 <div><strong>${escapeHTML(object.dataset)}</strong></div>
                 <div class="chat-container">
@@ -39,7 +42,7 @@ $(document).ready(function () {
                     </div>
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
-                <button class="btn btn-outline-secondary btn-sm close-tooltip" onclick="event.stopPropagation(); this.closest('#tooltip').style.display='none';">
+                <button class="btn btn-outline-secondary btn-sm close-tooltip" onclick="event.stopPropagation(); this.closest('#tooltip').style.display='none'; highlightedPointId = null; layer = layer.clone({updateTriggers: {getFillColor: [highlightedPointId], getRadius: [highlightedPointId], getLineWidth: [highlightedPointId], getPosition: [highlightedPointId]}}); deckgl.setProps({layers: [layer]});">
                     <i class="fas fa-times"></i>
                 </button>
                 <a target="_blank" href="/conversation/${object.dataset}/${object.i}" class="btn btn-outline-secondary btn-sm" style="display: inline-block;">View Full</a>
@@ -114,7 +117,7 @@ $(document).ready(function () {
     };
 
     let currentViewState = INITIAL_VIEW_STATE;
-    const deckgl = new deck.DeckGL({
+    deckgl = new deck.DeckGL({
         container: 'scatter-plot',
         map: false,
         views: new deck.OrthographicView({controller: true, width: '100%', height: '100%'}),
@@ -212,7 +215,7 @@ $(document).ready(function () {
     // Update view state
     const updateLayer = (data, highlightIds = []) => {
         const normalizedData = normalizeData(data);
-        const layer = new deck.ScatterplotLayer({
+        layer = new deck.ScatterplotLayer({
             coordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
             coordinateOrigin: [0, 0, 0],
             id: 'scatterplot-layer',
@@ -229,35 +232,75 @@ $(document).ready(function () {
             lineWidthMaxPixels: 2,
             //getPosition: (d) => d.position,
             getPosition: (d) => {
-                const z = highlightIds.includes(String(d.i)) ? 0.001 : 0;
+                let z = 0;
+                if (d.i === highlightedPointId) {
+                    z = 0.002; // Highest z-index for the highlighted point
+                } else if (highlightIds.includes(String(d.i))) {
+                    z = 0.001; // Slightly raised for filtered points
+                }
+                //const z = highlightIds.includes(String(d.i)) ? 0.001 : 0;
                 return [...d.position, z];
             },
-            getRadius: 3,
-            getLineWidth: 1,
+            //getRadius: 3,
+            getRadius: d => (d.i === highlightedPointId) ? 6 : 3, // Increase size for highlighted point
+            //getLineWidth: 1,
+            getLineWidth: d => (d.i === highlightedPointId) ? 2 : 1, // Thicker outline for highlighted point
             getFillColor: (d) => {
-                if (highlightIds.includes(String(d.i))) {
-                  return [255, 0, 0]; // Red for highlighted
+                if (d.i === highlightedPointId) {
+                    return [255, 255, 0]; // Yellow for the highlighted point
+                } else if (highlightIds.includes(String(d.i))) {
+                    return [255, 0, 0]; // Red for highlighted
                 }
                 return d.dataset === 'wildchat' ? [0, 255, 0] : [0, 0, 255]; // Green for wildchat, Blue for lmsyschat
+                //if (highlightIds.includes(String(d.i))) {
+                //  return [255, 0, 0]; // Red for highlighted
+                //}
+                //return d.dataset === 'wildchat' ? [0, 255, 0] : [0, 0, 255]; // Green for wildchat, Blue for lmsyschat
             },
             getLineColor: [0, 0, 0],
             onHover: ({object, x, y}) => {
                 if (!isMobileDevice()) {
+                    const newHighlightedPointId = object ? object.i : null;
+                    if (newHighlightedPointId != highlightedPointId) {
+                        highlightedPointId = newHighlightedPointId;
+                        layer = layer.clone({updateTriggers: {getFillColor: [highlightedPointId], getRadius: [highlightedPointId], getLineWidth: [highlightedPointId], getPosition: [highlightedPointId]}});
+                        deckgl.setProps({layers: [layer]});
+                    }
                     updateTooltip(object, x, y);
                 } //else {
                     //showMobileTooltip(object, x, y);
                 //}
             },
+            updateTriggers: {
+                getFillColor: [highlightedPointId],
+                getRadius: [highlightedPointId],
+                getLineWidth: [highlightedPointId],
+                getPosition: [highlightedPointId]
+            },
             onClick: ({object, x, y}) => {
                 if (object) {
                     if (isMobileDevice()) {
+                        const newHighlightedPointId = object.i;
+                        if (newHighlightedPointId != highlightedPointId) {
+                            highlightedPointId = newHighlightedPointId;
+                            layer = layer.clone({updateTriggers: {getFillColor: [highlightedPointId], getRadius: [highlightedPointId], getLineWidth: [highlightedPointId], getPosition: [highlightedPointId]}});
+                            deckgl.setProps({layers: [layer]});
+                        }
                         showMobileTooltip(object, x, y);
+                        //layer.setNeedsRedraw(true);
                         //updateTooltip(object, x, y);
                     } else {
                         window.open(`/conversation/${object.dataset}/${object.i}`, '_blank');
                     }
                 } else {
+                    const newHighlightedPointId = null;
+                    if (newHighlightedPointId != highlightedPointId) {
+                        highlightedPointId = newHighlightedPointId;
+                        layer = layer.clone({updateTriggers: {getFillColor: [highlightedPointId], getRadius: [highlightedPointId], getLineWidth: [highlightedPointId], getPosition: [highlightedPointId]}});
+                        deckgl.setProps({layers: [layer]});
+                    }
                     closeMobileTooltip();
+                    //layer.setNeedsRedraw(true);
                 }
             },
         });
