@@ -2,6 +2,25 @@
 
 WildVisualizer is a tool for visualizing and exploring conversation datasets using Elasticsearch and UMAP embeddings.
 
+## Dependencies
+
+- Elasticsearch
+- UMAP-learn
+- OpenAI
+- tiktoken
+- TensorFlow
+- Keras
+- Flask
+- Gunicorn
+
+For Elasticsearch, follow the official installation and setup guide.
+
+You can install most Python dependencies using:
+
+```
+pip install flask gunicorn numpy scikit-learn umap-learn openai tqdm tiktoken elasticsearch tensorflow keras
+```
+
 ## Setup and Deployment
 
 ### Build Elasticsearch Indices
