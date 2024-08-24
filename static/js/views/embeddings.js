@@ -27,13 +27,6 @@ $(document).ready(function () {
     function showMobileTooltip(object, x, y) {
         const tooltipEl = document.getElementById('tooltip');
         if (object && tooltipEl) {
-            tooltipEl.style.width = '44%';
-            //tooltipEl.style.maxHeight = '60vh';
-            tooltipEl.style.overflowY = 'auto';
-            tooltipEl.style.overflowY = 'auto';
-            tooltipEl.style.zIndex = '1500';
-            //tooltipEl.style.display = 'flex';
-            tooltipEl.style.flexDirection = 'column';
             const tooltipContent = `
                 <div><strong>${escapeHTML(object.dataset)}</strong></div>
                 <div class="chat-container">
@@ -50,7 +43,14 @@ $(document).ready(function () {
                 </div>
             `;
             tooltipEl.innerHTML = tooltipContent;
+            tooltipEl.style.width = '44%';
+            //tooltipEl.style.maxHeight = '60vh';
+            tooltipEl.style.overflowY = 'auto';
+            tooltipEl.style.overflowY = 'auto';
+            tooltipEl.style.zIndex = '1500';
+            //tooltipEl.style.display = 'flex';
             tooltipEl.style.display = 'flex';
+            tooltipEl.style.flexDirection = 'column';
             //tooltipEl.style.left = `${x}px`;
             //tooltipEl.style.top = `${y}px`;
             // Close tooltip when clicking outside
