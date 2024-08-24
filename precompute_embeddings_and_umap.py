@@ -17,7 +17,6 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 n_per_language = 50000  # Adjust as needed
 LANGUAGES = ['all', 'english', 'chinese', 'russian', 'spanish', 'french', 'portuguese', 'german', 'italian', 'turkish', 'arabic', 'japanese', 'korean', 'polish', 'vietnamese']
-LANGUAGES = ['chinese', 'russian', 'spanish', 'french', 'portuguese', 'german', 'italian', 'turkish', 'arabic', 'japanese', 'korean', 'polish', 'vietnamese']
 
 client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 tokenizer = tiktoken.get_encoding('cl100k_base')

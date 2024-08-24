@@ -22,11 +22,11 @@ def get_language_list():
 LANGUAGES = get_language_list()
 #LANGUAGES = ['english']
 LANGUAGES = ['all', 'english', 'chinese', 'russian', 'spanish', 'french', 'portuguese', 'german', 'italian', 'turkish', 'arabic', 'japanese', 'korean', 'polish', 'vietnamese']
-LANGUAGES = ['all']
-LANGUAGES = ['english']
-LANGUAGES = ['chinese', 'russian', 'spanish']
-LANGUAGES = ['french', 'portuguese', 'german', 'italian', 'turkish']
-LANGUAGES = ['arabic', 'japanese', 'korean', 'polish', 'vietnamese']
+#LANGUAGES = ['all']
+#LANGUAGES = ['english']
+#LANGUAGES = ['chinese', 'russian', 'spanish']
+#LANGUAGES = ['french', 'portuguese', 'german', 'italian', 'turkish']
+#LANGUAGES = ['arabic', 'japanese', 'korean', 'polish', 'vietnamese']
 print (LANGUAGES)
 
 for language in LANGUAGES:

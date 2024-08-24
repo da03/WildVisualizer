@@ -27,10 +27,10 @@ LANGUAGES = get_language_list()
 #LANGUAGES = [ 'korean', 'portuguese', 'italian', 'french', 'turkish', 'german']
 #LANGUAGES = [ 'english']
 LANGUAGES = ['all', 'english', 'chinese', 'russian', 'spanish', 'french', 'portuguese', 'german', 'italian', 'turkish', 'arabic', 'japanese', 'korean', 'polish', 'vietnamese']
-LANGUAGES = ['english']
-LANGUAGES = ['chinese', 'russian', 'spanish']
-LANGUAGES = ['french', 'portuguese', 'german', 'italian', 'turkish']
-LANGUAGES = ['arabic', 'japanese', 'korean', 'polish', 'vietnamese']
+#LANGUAGES = ['english']
+#LANGUAGES = ['chinese', 'russian', 'spanish']
+#LANGUAGES = ['french', 'portuguese', 'german', 'italian', 'turkish']
+#LANGUAGES = ['arabic', 'japanese', 'korean', 'polish', 'vietnamese']
 print (LANGUAGES)
 
 for language in LANGUAGES:
