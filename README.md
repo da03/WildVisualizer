@@ -84,6 +84,7 @@ gunicorn -w 4 -b 127.0.0.1:9972 main:app
   - `embeddings.html`: Template for the 2D embedding visualization page
 - `static/`:
   - `js/views/embeddings.js`: JavaScript file for the embedding visualization
+  - `css/main.css`: Main CSS file for styling the application
 - `create_es_wildchat.py`: Script to build Elasticsearch index for WildChat dataset
 - `create_es_lmsys.py`: Script to build Elasticsearch index for LMSYSChat dataset
 - `precompute_embeddings_and_umap.py`: Script to compute embeddings and train UMAP models
