@@ -1,0 +1,137 @@
+{% set active_page = "Conversation" %}
+{% set page_title = "Conversation" %}
+
+{% extends "base.html" %}
+{% block head %}
+{{ super() }}
+<style>
+.active-switch {
+    color: #bed972;
+    font-weight: bold;
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.4.0/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tippy.js@6/dist/tippy-bundle.umd.min.js"></script>
+
+<script src="/static/js/modules/icons.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+<script>
+$(document).ready(function () {
+    const modeSwitch = document.getElementById('searchModeSwitch');
+    const backLink = document.getElementById('backLink');
+    const filterLabel = document.getElementById('filterLabel');
+    const embeddingLabel = document.getElementById('embeddingLabel');
+    const dynamicLinks = document.querySelectorAll('.dynamic-link');
+   
+    function updateLinks() {
+        var baseUrl = modeSwitch.checked ?
+            ("{{ visualization_language }}" === "all" ? "/embeddings" : "/embeddings/{{ visualization_language }}") :
+            "/";
+
+        dynamicLinks.forEach(function(link) {
+            const param = link.getAttribute('data-param');
+            const value = link.getAttribute('data-value');
+            link.href = baseUrl + "?" + param + "=" + value;
+        });
+    }
+
+    function updateBackLink() {
+        if (modeSwitch.checked) {
+            const visualizationLanguage = "{{ visualization_language }}";
+            backLink.href = visualizationLanguage === "all" ? "/embeddings" : "/embeddings/" + visualizationLanguage;
+            filterLabel.classList.remove('active-switch');
+            filterLabel.classList.add('text-muted');
+            embeddingLabel.classList.remove('text-muted');
+            embeddingLabel.classList.add('active-switch');
+        } else {
+            backLink.href = "/";
+            filterLabel.classList.remove('text-muted');
+            filterLabel.classList.add('active-switch');
+            embeddingLabel.classList.remove('active-switch');
+            embeddingLabel.classList.add('text-muted');
+        }
+        updateLinks();
+    }
+    modeSwitch.addEventListener('change', updateBackLink);
+    filterLabel.addEventListener('click', function() {
+        modeSwitch.checked = false;
+        updateBackLink();
+    });
+    embeddingLabel.addEventListener('click', function() {
+        modeSwitch.checked = true;
+        updateBackLink();
+    });
+    updateBackLink();
+});
+</script>
+{% endblock %}
+
+{% block tabs %}
+<ul class="nav nav-pills justify-content-center">
+  <li class="nav-item">
+    <a id="backLink" class="nav-link text-muted active" href="/">Back</a>
+  </li>
+</ul>
+
+<div class="d-flex justify-content-center align-items-center mt-3 mb-3">
+  <span id="filterLabel" class="nav-link {% if from_page != 'embedding' %}active-switch{% endif %}">Filter Search</span>
+  <div class="custom-control custom-switch mx-2">
+    <input type="checkbox" class="custom-control-input" id="searchModeSwitch" {% if from_page == 'embedding' %}checked{% endif %}>
+    <label class="custom-control-label" for="searchModeSwitch"></label>
+  </div>
+  <span id="embeddingLabel" class="nav-link {% if from_page == 'embedding' %}active-switch{% endif %}">
+    Embedding Viz {% if visualization_language != 'all' %}({{ visualization_language|capitalize }}){% endif %}
+  </span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row p-3"></div>
+
+<!-- Conversation Details -->
+<div class="cards row">
+    <div class="myCard col-12">
+        <div class="pp-card pp-mode-detail ">
+            <div class="pp-card-header-metadata" style="height: auto;">
+                <h6 class="card-subtitle text-center" style="overflow-x: auto;"><a href="#">Conversation {{ conversation.conversation_id }}</a></h6>
+                {% if conversation.timestamp %}
+                <h6 class="card-subtitle text-muted" style="margin-top: 0; overflow-x: auto;">Time: {{ conversation.timestamp }}</h6>
+                {% endif %}
+                {% if conversation.country %}
+                <h6 class="card-subtitle text-muted" style="margin-top: 0">
+                    <a target="_blank" href="#" class="dynamic-link" data-param="state" data-value="{{ conversation.state }}&country={{ conversation.country }}" target="_blank">{{ conversation.state }}</a>,
+                    <a target="_blank" href="#" class="dynamic-link" data-param="country" data-value="{{ conversation.country }}" target="_blank">{{ conversation.country }}</a>
+                </h6>
+                {% endif %}
+                {% if conversation.hashed_ip %}
+                <h6 class="card-subtitle text-muted" style="margin-top: 0; overflow-x: auto;"><a target="_blank" target="_blank" href="#" class="dynamic-link" data-param="hashed_ip" data-value="{{ conversation.hashed_ip }}" target="_blank">IP Hash: {{ conversation.hashed_ip }}</a></h6>
+                {% endif %}
+                <h6 class="card-subtitle text-muted" style="margin-top: 0; overflow-x: auto;"><a href="#" class="dynamic-link" data-param="model" data-value="{{ conversation.model }}" target="_blank">Model: {{ conversation.model }}</a></h6>
+                <h6 class="card-subtitle text-muted" style="margin-top: 0; overflow-x: auto;">
+               {% if conversation.dataset == 'lmsyschat' %}
+                <a target="_blank" href="#" data-param="dataset" data-value="lmsyschat" class="dynamic-link badge badge-info" target="_blank">LMSYS-Chat</a>
+                {% elif conversation.dataset == 'wildchat' %}
+                <a target="_blank" href="#" data-param="dataset" data-value="wildchat" class="dynamic-link badge badge-success" target="_blank">WildChat</a>
+                {% endif %}
+                {% if conversation.toxic %}<a target="_blank" href="#" data-param="toxic" data-value="true" class="dynamic-link badge badge-danger">Toxic</a>{% endif %}
+                {% if conversation.redacted %}<a target="_blank" href="#" data-param="redacted" data-value="true" class="dynamic-link badge badge-danger">Contains personal info</a>{% endif %}
+                </h6>
+            </div>
+            <div class="pp-card-header" style="overflow-y: auto; height: auto;">
+                <div class="chat-container">
+                    {% for message in conversation.conversation %}
+                    <div class="messages {% if message.role == 'user' %}mine{% else %}yours{% endif %}">
+                        <div class="message last">{{ message.content|nl2br }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block footer %}
+
+{% endblock %}

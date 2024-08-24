@@ -327,7 +327,7 @@ def search_embeddings():
 
     #scaler = embedding_projectors[language]['scaler']
     #umap = embedding_projectors[language]['umap']
-    umap_encoder = embedding_projectors[language]
+    umap_encoder = embedding_projectors[visualization_language]
     #print (filters)
     disabled_datasets = []
     for dataset in indices:
@@ -448,40 +448,6 @@ def embeddings(language=None):
         "visualization_language": language or "all"
     })
     return render_template("embeddings.html", **data)
-#@app.route("/papers.json")
-#def paper_json():
-#    json = []
-#    for v in site_data["papers"]:
-#        json.append(format_paper(v))
-#    return jsonify(json)
-
-#@app.route("/serve_<path>.json")
-#def serve(path):
-#    json_path = f"sitedata/{path}.json"
-#    gz_path = f"sitedata/{path}.json.gz"
-#
-#    # Check if the compressed version exists
-#    if False and os.path.exists(gz_path):
-#        return send_file(gz_path, mimetype='application/json', as_attachment=False)
-#    elif os.path.exists(json_path):
-#        return send_file(json_path, mimetype='application/json', as_attachment=False)
-#    else:
-#        abort(404)  # File not found
-    #return jsonify(site_data[path])
-#@app.route("/serve_<path>.json.gz")
-#def serve_gz(path):
-#    gz_path = f"sitedata/{path}.json.gz"
-#    json_path = f"sitedata/{path}.json"
-#
-#    # Check if the compressed version exists
-#    if os.path.exists(gz_path):
-#        @after_this_request
-#        def add_header(response):
-#            response.headers['Content-Encoding'] = 'gzip'
-#            return response
-#        return send_file(gz_path, mimetype='application/json', as_attachment=False)
-#    else:
-#        abort(404)  # File not found
 
 def extract_list_field(v, key):
     value = v.get(key, "")
@@ -489,28 +455,6 @@ def extract_list_field(v, key):
         return value
     else:
         return value.split("|")
-
-def format_paper(v):
-    list_keys = ["authors", "keywords", "sessions"]
-    list_fields = {}
-    for key in list_keys:
-        list_fields[key] = extract_list_field(v, key)
-
-    return {
-        "UID": v["UID"],
-        "title": v["title"],
-        "forum": v["UID"],
-        "authors": list_fields["authors"],
-        "keywords": list_fields["keywords"],
-        "abstract": v["abstract"],
-        "TLDR": v["abstract"],
-        "recs": [],
-        "sessions": list_fields["sessions"],
-        # links to external content per poster
-        "pdf_url": v.get("pdf_url", ""),  # render poster from this PDF
-        "code_link": "https://github.com/Mini-Conf/Mini-Conf",  # link to code
-        "link": "https://arxiv.org/abs/2007.12238",  # link to paper
-    }
 
 @app.route("/conversation/wildchat/<int:turn_identifier>")
 def conversation_wildchat(turn_identifier):
@@ -543,6 +487,8 @@ def conversation_wildchat(turn_identifier):
     conversation['conversation_id'] = first_turn_identifier
     conversation['dataset'] = 'wildchat'
     data["conversation"] = conversation
+    data["from_page"] = request.args.get('from', 'filter')
+    data["visualization_language"] = request.args.get('lang', 'all')
     return render_template("conversation.html", **data)
 
 @app.route("/conversation/lmsyschat/<string:conversation_id>")
@@ -563,7 +509,10 @@ def conversation_lmsyschat(conversation_id):
     conversation['dataset'] = 'lmsyschat'
     conversation['toxic'] = any([item['flagged'] for item in conversation['openai_moderation']])
     data["conversation"] = conversation
+    data["from_page"] = request.args.get('from', 'filter')
+    data["visualization_language"] = request.args.get('lang', 'all')
     return render_template("conversation.html", **data)
+
 
 
 if __name__ == "__main__":

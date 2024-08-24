@@ -87,6 +87,7 @@ def process_non_debug_folders():
     LANGUAGES = ['english', 'all']
     LANGUAGES = ['all']
     LANGUAGES = ['all', 'english', 'chinese', 'russian', 'spanish', 'french', 'portuguese', 'german', 'italian', 'turkish', 'arabic', 'japanese', 'korean', 'polish', 'vietnamese']
+    LANGUAGES = ['english']
     for language in LANGUAGES:
         folder = f'static/{language}'
         print(f"Processing {folder}")

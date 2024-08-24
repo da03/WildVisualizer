@@ -6,6 +6,23 @@ let deckgl = null;
 let layer = null;
 let highlightedPointId = null;
 $(document).ready(function () {
+    // Function to set form values based on URL parameters
+    function setFormValuesFromUrlParams() {
+        let urlParams = new URLSearchParams(window.location.search);
+        $('#search-input').val(decodeURIComponent(urlParams.get('contains') || ''));
+        $('#filter-toxic').val(decodeURIComponent(urlParams.get('toxic') || ''));
+        $('#filter-redacted').val(decodeURIComponent(urlParams.get('redacted') || ''));
+        $('#filter-dataset').val(decodeURIComponent(urlParams.get('dataset') || ''));
+        $('#filter-model').val(decodeURIComponent(urlParams.get('model') || ''));
+        $('#filter-hashed-ip').val(decodeURIComponent(urlParams.get('hashed_ip') || ''));
+        $('#filter-language').val(decodeURIComponent(urlParams.get('language') || ''));
+        $('#filter-country').val(decodeURIComponent(urlParams.get('country') || ''));
+        $('#filter-state').val(decodeURIComponent(urlParams.get('state') || ''));
+        $('#filter-min-turns').val(decodeURIComponent(urlParams.get('min_turns') || ''));
+    }
+
+    // Set form values on page load
+    setFormValuesFromUrlParams();
     ['zoom-out', 'zoom-reset', 'zoom-in'].forEach(id => {
         const button = document.getElementById(id);
         button.addEventListener("touchstart", function(){ 
@@ -38,7 +55,7 @@ $(document).ready(function () {
                 <button class="btn btn-outline-secondary btn-sm close-tooltip" onclick="event.stopPropagation(); this.closest('#tooltip').style.display='none'; highlightedPointId = null; layer = layer.clone({updateTriggers: {getFillColor: [highlightedPointId], getRadius: [highlightedPointId, deckgl.viewManager.viewState.zoom], getLineWidth: [highlightedPointId], getPosition: [highlightedPointId]}}); deckgl.setProps({layers: [layer]});">
                     <i class="fas fa-times"></i>
                 </button>
-                <a target="_blank" href="/conversation/${object.dataset}/${object.i}" class="btn btn-outline-secondary btn-sm" style="display: inline-block;">View Full</a>
+                <a target="_blank" href="/conversation/${object.dataset}/${object.i}?from=embedding&lang=${visualizationLanguage}" class="btn btn-outline-secondary btn-sm" style="display: inline-block;">View Full</a>
             </div>
                 </div>
             `;
@@ -305,7 +322,7 @@ $(document).ready(function () {
                         //layer.setNeedsRedraw(true);
                         //updateTooltip(object, x, y);
                     } else {
-                        window.open(`/conversation/${object.dataset}/${object.i}`, '_blank');
+                        window.open(`/conversation/${object.dataset}/${object.i}?from=embedding&lang=${visualizationLanguage}`, '_blank');
                     }
                 } else {
                     const newHighlightedPointId = null;
@@ -543,4 +560,3 @@ $(document).ready(function () {
     document.body.appendChild(tooltipDiv);
     //deckgl.canvas.addEventListener('mouseleave', hideTooltip);
 });
-

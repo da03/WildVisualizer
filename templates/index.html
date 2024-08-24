@@ -126,14 +126,33 @@
     </div>
     <div class="col-12 col-sm-6 col-md-4">
         <div class="input-group mb-3">
-            <select id="filter-model" class="form-control filter-input" required>
-                <option value="" {% if not filters.model %}selected{% endif %}>Model</option>
-                <option value="gpt-4-1106-preview" {% if filters.model == 'gpt-4-1106-preview' %}selected{% endif %}>gpt-4-1106-preview</option>
-                <option value="gpt-4-0314" {% if filters.model == 'gpt-4-0314' %}selected{% endif %}>gpt-4-0314</option>
-                <option value="gpt-3.5-turbo-0613" {% if filters.model == 'gpt-3.5-turbo-0613' %}selected{% endif %}>gpt-3.5-turbo-0613</option>
-                <option value="gpt-3.5-turbo-0301" {% if filters.model == 'gpt-3.5-turbo-0301' %}selected{% endif %}>gpt-3.5-turbo-0301</option>
-                <option value="gpt-3.5-turbo-0125" {% if filters.model == 'gpt-3.5-turbo-0125' %}selected{% endif %}>gpt-3.5-turbo-0125</option>
-            </select>
+            <input type="text" id="filter-model" class="form-control filter-input" placeholder="Model" value="{{ filters.model }}" list="model-options">
+            <datalist id="model-options">
+                <option value="gpt-4-1106-preview">
+                <option value="gpt-4-0314">
+                <option value="gpt-4-0125-preview">
+                <option value="gpt-3.5-turbo-0613">
+                <option value="gpt-3.5-turbo-0301">
+                <option value="gpt-3.5-turbo-0125">
+                <option value="vicuna-13b">
+                <option value="koala-13b">
+                <option value="alpaca-13b">
+                <option value="chatglm-6b">
+                <option value="llama-13b">
+                <option value="vicuna-33b">
+                <option value="llama-2-13b-chat">
+                <option value="oasst-pythia-12b">
+                <option value="fastchat-t5-3b">
+                <option value="claude-1">
+                <option value="dolly-v2-12b">
+                <option value="vicuna-7b">
+                <option value="wizardlm-13b">
+                <option value="RWKV-4-Raven-14B">
+                <option value="mpt-7b-chat">
+                <option value="guanaco-33b">
+                <option value="stablelm-tuned-alpha-7b">
+                <option value="mpt-30b-chat">
+            </datalist>
             <div class="input-group-append">
                 <button class="btn btn-outline-secondary add-filter" type="button" data-filter="model">+</button>
             </div>
