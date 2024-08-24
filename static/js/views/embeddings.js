@@ -35,7 +35,7 @@ $(document).ready(function () {
                     </div>
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
-                <button class="btn btn-outline-secondary btn-sm close-tooltip" onclick="event.stopPropagation(); this.closest('#tooltip').style.display='none'; highlightedPointId = null; layer = layer.clone({updateTriggers: {getFillColor: [highlightedPointId], getRadius: [highlightedPointId], getLineWidth: [highlightedPointId], getPosition: [highlightedPointId]}}); deckgl.setProps({layers: [layer]});">
+                <button class="btn btn-outline-secondary btn-sm close-tooltip" onclick="event.stopPropagation(); this.closest('#tooltip').style.display='none'; highlightedPointId = null; layer = layer.clone({updateTriggers: {getFillColor: [highlightedPointId], getRadius: [highlightedPointId, deckgl.viewManager.viewState.zoom], getLineWidth: [highlightedPointId], getPosition: [highlightedPointId]}}); deckgl.setProps({layers: [layer]});">
                     <i class="fas fa-times"></i>
                 </button>
                 <a target="_blank" href="/conversation/${object.dataset}/${object.i}" class="btn btn-outline-secondary btn-sm" style="display: inline-block;">View Full</a>
@@ -130,6 +130,8 @@ $(document).ready(function () {
             deckgl.setProps({
               viewState: currentViewState
             });
+            layer = layer.clone({updateTriggers: {getFillColor: [highlightedPointId], getRadius: [highlightedPointId, deckgl.viewManager.viewState.zoom], getLineWidth: [highlightedPointId], getPosition: [highlightedPointId]}});
+            deckgl.setProps({layers: [layer]});
         },
         getCursor: ({isDragging, isHovering}) => {
             if (isDragging) {
@@ -226,7 +228,7 @@ $(document).ready(function () {
             filled: true,
             radiusScale: 1,
             radiusMinPixels: 1,
-            radiusMaxPixels: 6,
+            //radiusMaxPixels: 6,
             lineWidthUnits: 'pixels',
             lineWidthMinPixels: 0,
             lineWidthMaxPixels: 2,
@@ -242,7 +244,20 @@ $(document).ready(function () {
                 return [...d.position, z];
             },
             //getRadius: 3,
-            getRadius: d => (d.i === highlightedPointId) ? 6 : 3, // Increase size for highlighted point
+            getRadius: (d) => {
+                const zoom = deckgl.viewManager.viewState.zoom;
+                const baseRadius = 3;
+                const maxRadius = 6;
+                let radius = baseRadius;
+                if (Math.pow(2, zoom) * radius > maxRadius) {
+                    radius = maxRadius / Math.pow(2, zoom);
+                }
+                if (d.i === highlightedPointId) {
+                    return radius * 2;
+                } else {
+                    return radius;
+                }
+            },
             //getLineWidth: 1,
             getLineWidth: d => (d.i === highlightedPointId) ? 2 : 1, // Thicker outline for highlighted point
             getFillColor: (d) => {
@@ -263,7 +278,7 @@ $(document).ready(function () {
                     const newHighlightedPointId = object ? object.i : null;
                     if (newHighlightedPointId != highlightedPointId) {
                         highlightedPointId = newHighlightedPointId;
-                        layer = layer.clone({updateTriggers: {getFillColor: [highlightedPointId], getRadius: [highlightedPointId], getLineWidth: [highlightedPointId], getPosition: [highlightedPointId]}});
+                        layer = layer.clone({updateTriggers: {getFillColor: [highlightedPointId], getRadius: [highlightedPointId, deckgl.viewManager.viewState.zoom], getLineWidth: [highlightedPointId], getPosition: [highlightedPointId]}});
                         deckgl.setProps({layers: [layer]});
                     }
                     updateTooltip(object, x, y);
@@ -273,7 +288,7 @@ $(document).ready(function () {
             },
             updateTriggers: {
                 getFillColor: [highlightedPointId],
-                getRadius: [highlightedPointId],
+                getRadius: [highlightedPointId, deckgl.viewManager.viewState.zoom],
                 getLineWidth: [highlightedPointId],
                 getPosition: [highlightedPointId]
             },
@@ -283,7 +298,7 @@ $(document).ready(function () {
                         const newHighlightedPointId = object.i;
                         if (newHighlightedPointId != highlightedPointId) {
                             highlightedPointId = newHighlightedPointId;
-                            layer = layer.clone({updateTriggers: {getFillColor: [highlightedPointId], getRadius: [highlightedPointId], getLineWidth: [highlightedPointId], getPosition: [highlightedPointId]}});
+                            layer = layer.clone({updateTriggers: {getFillColor: [highlightedPointId], getRadius: [highlightedPointId, deckgl.viewManager.viewState.zoom], getLineWidth: [highlightedPointId], getPosition: [highlightedPointId]}});
                             deckgl.setProps({layers: [layer]});
                         }
                         showMobileTooltip(object, x, y);
@@ -296,7 +311,7 @@ $(document).ready(function () {
                     const newHighlightedPointId = null;
                     if (newHighlightedPointId != highlightedPointId) {
                         highlightedPointId = newHighlightedPointId;
-                        layer = layer.clone({updateTriggers: {getFillColor: [highlightedPointId], getRadius: [highlightedPointId], getLineWidth: [highlightedPointId], getPosition: [highlightedPointId]}});
+                        layer = layer.clone({updateTriggers: {getFillColor: [highlightedPointId], getRadius: [highlightedPointId, deckgl.viewManager.viewState.zoom], getLineWidth: [highlightedPointId], getPosition: [highlightedPointId]}});
                         deckgl.setProps({layers: [layer]});
                     }
                     closeMobileTooltip();
@@ -487,15 +502,21 @@ $(document).ready(function () {
             $('#zoom-in').on('click', () => {
               currentViewState = {...currentViewState, zoom: currentViewState.zoom+0.5}
               deckgl.setProps({viewState: currentViewState});
+              layer = layer.clone({updateTriggers: {getFillColor: [highlightedPointId], getRadius: [highlightedPointId, deckgl.viewManager.viewState.zoom], getLineWidth: [highlightedPointId], getPosition: [highlightedPointId]}});
+              deckgl.setProps({layers: [layer]});
             });
 
             $('#zoom-out').on('click', () => {
               currentViewState = {...currentViewState, zoom: currentViewState.zoom-0.5}
               deckgl.setProps({viewState: currentViewState});
+              layer = layer.clone({updateTriggers: {getFillColor: [highlightedPointId], getRadius: [highlightedPointId, deckgl.viewManager.viewState.zoom], getLineWidth: [highlightedPointId], getPosition: [highlightedPointId]}});
+              deckgl.setProps({layers: [layer]});
             });
             $('#zoom-reset').on('click', () => {
               currentViewState = {...currentViewState, zoom: 0, target: [0, 0, 0]}
               deckgl.setProps({viewState: currentViewState});
+              layer = layer.clone({updateTriggers: {getFillColor: [highlightedPointId], getRadius: [highlightedPointId, deckgl.viewManager.viewState.zoom], getLineWidth: [highlightedPointId], getPosition: [highlightedPointId]}});
+              deckgl.setProps({layers: [layer]});
             });
             //hideLoading();
         })
