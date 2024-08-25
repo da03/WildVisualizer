@@ -14,7 +14,7 @@ WildVisualizer is a tool for visualizing and exploring conversation datasets usi
 ## Dependencies
 
 - Elasticsearch
-- UMAP-learn
+- UMAP-learn (Due to a bug in parametric UMAP when working with large datasets, we are using a customized version available at https://github.com/da03/umap)
 - Datasets
 - OpenAI
 - tiktoken
@@ -28,7 +28,7 @@ For Elasticsearch, follow the official installation and setup guide.
 You can install most Python dependencies using:
 
 ```
-pip install flask gunicorn numpy scikit-learn datasets umap-learn openai tqdm tiktoken elasticsearch tensorflow keras
+pip install flask gunicorn numpy scikit-learn datasets git+https://github.com/da03/umap openai tqdm tiktoken elasticsearch tensorflow keras
 ```
 
 
