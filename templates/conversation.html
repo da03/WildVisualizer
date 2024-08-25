@@ -5,6 +5,12 @@
 {% block head %}
 {{ super() }}
 <style>
+@media (max-width: 575px) {
+    #filterLabel, #embeddingLabel {
+          font-size: 0.9rem;
+          padding: 0.5rem 0.75rem;
+    }
+}
 .active-switch {
     color: #bed972;
     font-weight: bold;
@@ -67,7 +73,35 @@ $(document).ready(function () {
 {% endblock %}
 
 {% block tabs %}
-<ul class="nav nav-pills justify-content-center">
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12 text-center mb-3">
+      <ul class="nav nav-pills justify-content-center">
+        <li class="nav-item">
+          <a id="backLink" class="nav-link text-muted active" href="/">Back</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-5 text-right">
+      <span id="filterLabel" class="nav-link {% if from_page != 'embedding' %}active-switch{% endif %}" style="cursor:pointer;">Filter Search</span>
+    </div>
+    <div class="col-2 text-center">
+      <div class="custom-control custom-switch">
+        <input type="checkbox" class="custom-control-input" id="searchModeSwitch" {% if from_page == 'embedding' %}checked{% endif %}>
+        <label class="custom-control-label" for="searchModeSwitch"></label>
+      </div>
+    </div>
+    <div class="col-5 text-left">
+      <span id="embeddingLabel" class="nav-link {% if from_page == 'embedding' %}active-switch{% endif %}" style="cursor:pointer;">
+        Embedding Viz {% if visualization_language != 'all' %}({{ visualization_language|capitalize }}){% endif %}
+      </span>
+    </div>
+  </div>
+</div>
+<!--ul class="nav nav-pills justify-content-center">
   <li class="nav-item">
     <a id="backLink" class="nav-link text-muted active" href="/">Back</a>
   </li>
@@ -82,7 +116,7 @@ $(document).ready(function () {
   <span id="embeddingLabel" class="nav-link {% if from_page == 'embedding' %}active-switch{% endif %}">
     Embedding Viz {% if visualization_language != 'all' %}({{ visualization_language|capitalize }}){% endif %}
   </span>
-</div>
+</div-->
 {% endblock %}
 
 {% block content %}
@@ -109,9 +143,9 @@ $(document).ready(function () {
                 <h6 class="card-subtitle text-muted" style="margin-top: 0; overflow-x: auto;"><a href="#" class="dynamic-link" data-param="model" data-value="{{ conversation.model }}" target="_blank">Model: {{ conversation.model }}</a></h6>
                 <h6 class="card-subtitle text-muted" style="margin-top: 0; overflow-x: auto;">
                {% if conversation.dataset == 'lmsyschat' %}
-                <a target="_blank" href="#" data-param="dataset" data-value="lmsyschat" class="dynamic-link badge badge-info" target="_blank">LMSYS-Chat</a>
+                <a target="_blank" href="#" data-param="dataset" data-value="lmsyschat" class="dynamic-link badge badge-info">LMSYS-Chat</a>
                 {% elif conversation.dataset == 'wildchat' %}
-                <a target="_blank" href="#" data-param="dataset" data-value="wildchat" class="dynamic-link badge badge-success" target="_blank">WildChat</a>
+                <a target="_blank" href="#" data-param="dataset" data-value="wildchat" class="dynamic-link badge badge-success">WildChat</a>
                 {% endif %}
                 {% if conversation.toxic %}<a target="_blank" href="#" data-param="toxic" data-value="true" class="dynamic-link badge badge-danger">Toxic</a>{% endif %}
                 {% if conversation.redacted %}<a target="_blank" href="#" data-param="redacted" data-value="true" class="dynamic-link badge badge-danger">Contains personal info</a>{% endif %}
