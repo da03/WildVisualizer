@@ -482,7 +482,7 @@ def conversation_wildchat(turn_identifier):
 
     # If the turn_identifier is not the first turn, redirect to the first turn's page
     if turn_identifier != first_turn_identifier:
-        return redirect(url_for('conversation', turn_identifier=first_turn_identifier))
+        return redirect(url_for('conversation_wildchat', turn_identifier=first_turn_identifier))
 
     conversation['conversation_id'] = first_turn_identifier
     conversation['dataset'] = 'wildchat'
