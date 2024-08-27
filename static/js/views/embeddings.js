@@ -474,6 +474,8 @@ $(document).ready(function () {
             $('#filter-redacted').val('');
         } else if (filter == 'dataset') {
             $('#filter-dataset').val('');
+        } else if (filter == 'search_expansion_limit') {
+            $('#filter-search-expansion-limit').val('');
         } else if (filter == 'model') {
             $('#filter-model').val('');
         } else if (filter == 'hashed_ip') {
