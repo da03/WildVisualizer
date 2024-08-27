@@ -399,7 +399,7 @@ def search_embeddings():
     #conversations = [hit['_source']['conversation'] for hit in response['hits']['hits']]
 
     conversation_embeddings = {}
-    #print ('fsfs', len(conversations))
+    print ('#Matched Conversation:', len(conversations))
     for conversation in conversations:
         dataset = conversation['dataset']
         conversation_id = conversation['conversation_id']
