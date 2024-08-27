@@ -204,17 +204,36 @@
         </div>
     </div>
     <div class="col-12 col-sm-6 col-md-4">
-    <div class="input-group mb-3">
-        <select id="filter-dataset" class="form-control filter-input" required>
-            <option value="" {% if not filters.dataset %}selected{% endif %}>Dataset</option>
-            <option value="wildchat" {% if filters.dataset == 'wildchat' %}selected{% endif %}>WildChat</option>
-            <option value="lmsyschat" {% if filters.dataset == 'lmsyschat' %}selected{% endif %}>LMSYS-Chat-1M</option>
-        </select>
-        <div class="input-group-append">
-            <button class="btn btn-outline-secondary add-filter" type="button" data-filter="dataset">+</button>
+        <div class="input-group mb-3">
+            <select id="filter-dataset" class="form-control filter-input" required>
+                <option value="" {% if not filters.dataset %}selected{% endif %}>Dataset</option>
+                <option value="wildchat" {% if filters.dataset == 'wildchat' %}selected{% endif %}>WildChat</option>
+                <option value="lmsyschat" {% if filters.dataset == 'lmsyschat' %}selected{% endif %}>LMSYS-Chat-1M</option>
+            </select>
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary add-filter" type="button" data-filter="dataset">+</button>
+            </div>
         </div>
     </div>
-</div>
+
+    <div class="col-12 col-sm-6 col-md-4">
+        <div class="input-group mb-3">
+            <select id="filter-search-expansion-limit" class="form-control filter-input" required>
+                <option value="" {% if not filters.search_expansion_limit %}selected{% endif %}>Search Expansion Limitt</option>
+                <option value="0" {% if filters.search_expansion_limit == '0' %}selected{% endif %}>No expansion</option>
+                <option value="10" {% if filters.search_expansion_limit == '10' %}selected{% endif %}>10 results</option>
+                <option value="20" {% if filters.search_expansion_limit == '20' %}selected{% endif %}>20 results</option>
+                <option value="50" {% if filters.search_expansion_limit == '50' %}selected{% endif %}>50 results</option>
+                <option value="100" {% if filters.search_expansion_limit == '100' %}selected{% endif %}>100 results</option>
+                <option value="200" {% if filters.search_expansion_limit == '200' %}selected{% endif %} hidden>200 results</option>
+                <option value="500" {% if filters.search_expansion_limit == '500' %}selected{% endif %} hidden>500 results</option>
+            </select>
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary add-filter" type="button" data-filter="search_expansion_limit">+</button>
+            </div>
+            <!--i class="fas fa-info-circle ml-2" data-toggle="tooltip" data-html="true" title="If fewer results are found in the currently visualized points, the search will expand to the entire dataset up to this limit. <br><br>Larger values may result in slower response times due to embedding computations and increased network traffic."></i-->
+        </div>
+    </div>
 
 </div>
 

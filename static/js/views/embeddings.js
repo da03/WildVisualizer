@@ -6,6 +6,7 @@ let deckgl = null;
 let layer = null;
 let highlightedPointId = null;
 $(document).ready(function () {
+    //$('[data-toggle="tooltip"]').tooltip();
     // Function to set form values based on URL parameters
     function setFormValuesFromUrlParams() {
         let urlParams = new URLSearchParams(window.location.search);
@@ -19,6 +20,7 @@ $(document).ready(function () {
         $('#filter-country').val(decodeURIComponent(urlParams.get('country') || ''));
         $('#filter-state').val(decodeURIComponent(urlParams.get('state') || ''));
         $('#filter-min-turns').val(decodeURIComponent(urlParams.get('min_turns') || ''));
+        $('#filter-search-expansion-limit').val(decodeURIComponent(urlParams.get('search_expansion_limit') || ''));
     }
 
     // Set form values on page load
@@ -386,6 +388,7 @@ $(document).ready(function () {
           model: $('#filter-model').val(),
           redacted: $('#filter-redacted').val(),
           dataset: $('#filter-dataset').val(),
+          search_expansion_limit: $('#filter-search-expansion-limit').val(),
           conversation_id: ''
       };
       // Update URL parameters
@@ -558,5 +561,6 @@ $(document).ready(function () {
     tooltipDiv.style.overflowY = 'auto';
     tooltipDiv.style.display = 'none';
     document.body.appendChild(tooltipDiv);
+
     //deckgl.canvas.addEventListener('mouseleave', hideTooltip);
 });

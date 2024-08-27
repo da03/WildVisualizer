@@ -320,10 +320,18 @@ def index():
 @app.route('/search_embeddings', methods=['POST'])
 def search_embeddings():
     filters = request.json
+    search_expansion_limit = filters['search_expansion_limit']
+    del filters['search_expansion_limit']
+    if search_expansion_limit == '':
+        search_expansion_limit = '20'
+    search_expansion_limit = int(search_expansion_limit)
+    search_expansion_limit = max(0, min(search_expansion_limit, 1000))
+
     contains = filters['contains']
     del filters['contains']
     visualization_language = filters['visualization_language']
     del filters['visualization_language']
+
 
     #scaler = embedding_projectors[language]['scaler']
     #umap = embedding_projectors[language]['umap']
@@ -369,12 +377,10 @@ def search_embeddings():
                 if conversation_id not in conversation_ids:
                     conversations.append(conversation)
                     conversation_ids.add(conversation_id)
-
-        target_size = 20
-        if len(conversations) < target_size:
+        if len(conversations) < search_expansion_limit and len(indices_to_search) > 0:
             for index_name in indices_to_search:
                 # Execute search query
-                search_query, any_filters_ = build_query_for_index(index_name, filters, contains, 0, target_size // len(indices_to_search))
+                search_query, any_filters_ = build_query_for_index(index_name, filters, contains, 0, max(1, search_expansion_limit // len(indices_to_search)))
                 response = es.search(index=index_name, body=search_query)
                 conversations_raw = [hit['_source'] for hit in response['hits']['hits']]
 
@@ -429,6 +435,7 @@ def embeddings(language=None):
         "country": request.args.get('country', ''),
         "state": request.args.get('state', ''),
         "min_turns": request.args.get('min_turns', ''),
+        "search_expansion_limit": request.args.get('search_expansion_limit', ''),
         "conversation_id": request.args.get('conversation_id', '')
     }
     #if language:
