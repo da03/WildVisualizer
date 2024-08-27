@@ -441,12 +441,17 @@ def embeddings(language=None):
     #if language:
     #    filters['language'] = language.capitalize()
     #    any_filters = True
-
-    must_clauses = []
-    if must_clauses:
+    any_filters = False
+    for key in filters:
+        if filters[key]:
+            any_filters = True
+    if contains:
         any_filters = True
-    else:
-        any_filters = False
+    #must_clauses = []
+    #if must_clauses:
+    #    any_filters = True
+    #else:
+    #    any_filters = False
     #data["papers"] = site_data["papers"]
     data.update({
         "contains": contains,
