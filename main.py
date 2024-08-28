@@ -148,11 +148,11 @@ def insert_or_update(db_name, key, prompt, embedding):
 def retrieve(db_name, key):
     conn = sqlite3.connect(db_name)
     c = conn.cursor()
-    c.execute("SELECT prompt, embedding FROM cache WHERE key=?", (key,))
+    c.execute("SELECT embedding FROM cache WHERE key=?", (key,))
     result = c.fetchone()
     conn.close()
     if result:
-        return True, json.loads(result[1])
+        return True, json.loads(result[0])
     else:
         return False, None
 
@@ -408,6 +408,8 @@ def search_embeddings():
         #create_database(umap_database_name)
         hit, embedding_2d = retrieve(umap_database_name, conversation_id)
         if not hit:
+            print ('not hit')
+            #import pdb; pdb.set_trace()
             conversation_text = conversation['conversation'][0]['content']
             conversation_text = conversation_text.strip()
             if not conversation_text:

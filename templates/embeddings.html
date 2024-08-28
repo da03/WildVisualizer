@@ -225,8 +225,9 @@
                 <option value="20" {% if filters.search_expansion_limit == '20' %}selected{% endif %}>20 results</option>
                 <option value="50" {% if filters.search_expansion_limit == '50' %}selected{% endif %}>50 results</option>
                 <option value="100" {% if filters.search_expansion_limit == '100' %}selected{% endif %}>100 results</option>
-                <option value="200" {% if filters.search_expansion_limit == '200' %}selected{% endif %} hidden>200 results</option>
-                <option value="500" {% if filters.search_expansion_limit == '500' %}selected{% endif %} hidden>500 results</option>
+                <option value="200" {% if filters.search_expansion_limit == '200' %}selected{% endif %}>200 results</option>
+                <option value="500" {% if filters.search_expansion_limit == '500' %}selected{% endif %}>500 results</option>
+                <option value="1000" {% if filters.search_expansion_limit == '1000' %}selected{% endif %}>1000 results</option>
             </select>
             <div class="input-group-append">
                 <button class="btn btn-outline-secondary add-filter" type="button" data-filter="search_expansion_limit">+</button>
