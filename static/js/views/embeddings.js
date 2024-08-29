@@ -1,10 +1,27 @@
+let deckgl = null;
+let layer = null;
+let highlightedPointId = null;
 function isMobileDevice() {
     //return 1==1;
     return (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1);
 }
-let deckgl = null;
-let layer = null;
-let highlightedPointId = null;
+function hideTooltip() {
+    const tooltipEl = document.getElementById('tooltip');
+    if (tooltipEl) {
+        tooltipEl.style.display = 'none';
+    }
+    const newHighlightedPointId = null;
+    if (newHighlightedPointId != highlightedPointId) {
+        highlightedPointId = newHighlightedPointId;
+        layer = layer.clone({updateTriggers: {getFillColor: [highlightedPointId], getRadius: [highlightedPointId, deckgl.viewManager.viewState.zoom], getLineWidth: [highlightedPointId], getPosition: [highlightedPointId]}});
+        deckgl.setProps({layers: [layer]});
+    }
+}
+function maybeHideTooltip() {
+    if (!isMobileDevice()) {
+        hideTooltip();
+    }
+}
 $(document).ready(function () {
     //$('[data-toggle="tooltip"]').tooltip();
     // Function to set form values based on URL parameters
