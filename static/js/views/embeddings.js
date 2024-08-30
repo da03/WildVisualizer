@@ -416,7 +416,10 @@ $(document).ready(function () {
               urlParams.delete(key);
           }
       }
-      const queryString = urlParams.toString();
+      const queryString = Array.from(urlParams.entries())
+                          .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+                          .join('&');
+      //const queryString = urlParams.toString();
       const newUrl = queryString ? "?" + queryString : window.location.pathname;
       window.history.replaceState(null, null, newUrl);
       updateCurrentFilters();
