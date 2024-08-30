@@ -323,9 +323,9 @@ def search_embeddings():
     search_expansion_limit = filters['search_expansion_limit']
     del filters['search_expansion_limit']
     if search_expansion_limit == '':
-        search_expansion_limit = '20'
+        search_expansion_limit = '100'
     search_expansion_limit = int(search_expansion_limit)
-    search_expansion_limit = max(0, min(search_expansion_limit, 1000))
+    search_expansion_limit = max(0, min(search_expansion_limit, 2000))
 
     contains = filters['contains']
     del filters['contains']
