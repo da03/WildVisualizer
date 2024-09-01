@@ -145,7 +145,7 @@ $(document).ready(function () {
         target: [0, 0, 0],
         longitude: 0,
         latitude: 0,
-        zoom: 0,
+        zoom: -0.5,
         minZoom: -10,
         maxZoom: 10,
         pitch: 0,
@@ -555,7 +555,7 @@ $(document).ready(function () {
               deckgl.setProps({layers: [layer]});
             });
             $('#zoom-reset').on('click', () => {
-              currentViewState = {...currentViewState, zoom: 0, target: [0, 0, 0]}
+              currentViewState = {...currentViewState, zoom: -0.5, target: [0, 0, 0]}
               deckgl.setProps({viewState: currentViewState});
               layer = layer.clone({updateTriggers: {getFillColor: [highlightedPointId], getRadius: [highlightedPointId, deckgl.viewManager.viewState.zoom], getLineWidth: [highlightedPointId], getPosition: [highlightedPointId]}});
               deckgl.setProps({layers: [layer]});
