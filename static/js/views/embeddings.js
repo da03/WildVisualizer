@@ -581,6 +581,7 @@ $(document).ready(function () {
     tooltipDiv.style.border = '1px solid #ccc';
     tooltipDiv.style.borderRadius = '3px';
     tooltipDiv.style.overflowY = 'auto';
+    tooltipDiv.style.zIndex = '1500';
     tooltipDiv.style.display = 'none';
     document.body.appendChild(tooltipDiv);
 
