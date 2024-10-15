@@ -88,6 +88,15 @@
     <link rel="stylesheet" href="/static/css/typeahead.css">
     <link rel="stylesheet" href="/static/css/conversation.css">
 
+    <style>
+        .author-link {
+            text-decoration: none;
+        }
+        .author-link:hover {
+            text-decoration: underline !important;
+        }
+    </style>
+
     <title>{{config.page_title.prefix}}</title>
     {% endblock %}
 </head>
@@ -149,7 +158,15 @@
 <!-- Main Heading -->
 <div class="row">
     <div class="col-12 text-center">
-        <h2>What Do People Use ChatGPT For?</h2>
+        <h3><a href="https://arxiv.org/abs/2409.03753" class="author-link" style="color:black;">WildVis: Open Source Visualizer for Million-Scale Chat Logs in the Wild</a></h3>
+        <p>
+            <a href="https://www.yuntiandeng.com" class="author-link text-muted">Yuntian Deng</a>,
+            <a href="https://wenting-zhao.github.io/" class="author-link text-muted">Wenting Zhao</a>,
+            <a href="https://jmhessel.com/" class="author-link text-muted">Jack Hessel</a>,
+            <a href="https://www.seanre.com/" class="author-link text-muted">Xiang Ren</a>,
+            <a href="https://www.cs.cornell.edu/home/cardie/" class="author-link text-muted">Claire Cardie</a>,
+            <a href="https://homes.cs.washington.edu/~yejin/" class="author-link text-muted">Yejin Choi</a>
+        </p>
     </div>
 </div>
 <!-- Links to Paper and Dataset -->
@@ -160,7 +177,7 @@
 	<a href="https://huggingface.co/spaces/yuntian-deng/ChatGPT4" target="_blank" class="btn btn-outline-primary m-2">Free GPT-4 Chatbot</a>
     </div>
 </div-->
-<div class="row p-3"></div>
+<!--div class="row p-3"></div-->
     <!-- Tabs -->
     <div class="tabs">
         {% block tabs %} {% endblock %}
