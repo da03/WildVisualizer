@@ -44,7 +44,7 @@ def build_query_for_index(index_name, filters, contains, from_, size_):
             "nested": {
                 "path": "openai_moderation",
                 "query": {
-                    "term": {"openai_moderation.flagged": True}
+                    "term": {"openai_moderation.flagged": filters['toxic'] == 'true'}
                 }
             }
         })

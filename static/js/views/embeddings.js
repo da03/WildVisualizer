@@ -459,8 +459,13 @@ $(document).ready(function () {
             acc.set(d.i, d);
             return acc;
         }, new Map());
-        const uniqueDataArray = Array.from(mergedData.values());
 
+        // Filter by dataset if the dataset filter is set
+        let uniqueDataArray = Array.from(mergedData.values());
+        const datasetFilter = $('#filter-dataset').val();
+        if (datasetFilter) {
+            uniqueDataArray = uniqueDataArray.filter(d => d.dataset === datasetFilter);
+        }
 
         updateLayer(uniqueDataArray, highlightIds);
         hideLoading();
