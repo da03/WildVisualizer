@@ -10,6 +10,9 @@ WildVisualizer is a tool for visualizing and exploring conversation datasets usi
 - Responsive design for both desktop and mobile devices
 - Efficient loading and rendering of large datasets
 
+A shared folder containing embeddings, UMAP models, and related cache files is now publicly available for reproducibility and faster setup:
+
+👉 **[https://drive.google.com/drive/folders/1Fid4-IyHKM4axclZEwHRlpkRwIeEDIq6?usp=sharing](https://drive.google.com/drive/folders/1Fid4-IyHKM4axclZEwHRlpkRwIeEDIq6?usp=sharing)**
 
 ## Dependencies
 
